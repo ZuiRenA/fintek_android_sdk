@@ -24,27 +24,27 @@ object TimberUtil {
 
     @JvmStatic
     @JvmOverloads
-    fun v(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.V, tag, contents)
+    fun v(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.V, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
-    fun d(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.D, tag, contents)
+    fun d(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.D, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
-    fun i(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.I, tag, contents)
+    fun i(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.I, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
-    fun w(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.W, tag, contents)
+    fun w(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.W, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
-    fun e(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.E, tag, contents)
+    fun e(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.E, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
-    fun a(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.A, tag, contents)
+    fun a(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.A, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
@@ -79,7 +79,7 @@ object TimberUtil {
             if (typeLow < CONFIG.consoleFilter.logLevel && typeLow < CONFIG.fileFilter.logLevel) return
 
             val tagHead = tag.processTagAndHead()
-            val body = processBody(typeHigh, contents)
+            val body = processBody(typeHigh, contents = contents)
             if (CONFIG.isLog2ConsoleSwitch() && typeHigh != FILE && typeLow >= CONFIG.consoleFilter.logLevel) {
                 print2Console(typeLow, tagHead.tag, tagHead.consoleHead?.toTypedArray(), body ?: "")
             }
@@ -99,7 +99,7 @@ object TimberUtil {
             val stackTrace = Throwable().stackTrace
             val stackIndex = 3 + CONFIG.getStackOffset()
 
-            if (stackIndex > stackTrace.size) {
+            if (stackIndex >= stackTrace.size) {
                 val targetElement = stackTrace[3]
                 val fileName = targetElement.getInternalFileName()
                 if (CONFIG.tagIsSpace && shadowTag.isBlank()) {
@@ -177,7 +177,10 @@ object TimberUtil {
                             .append("[").append(index).append("]")
                             .append(" = ")
                             .append(formatObject(obj))
-                            .append(LINE_SEP)
+
+                        if (index != contents.lastIndex) {
+                            sb.append(LINE_SEP)
+                        }
                     }
                     sb.toString()
                 }
@@ -331,7 +334,7 @@ object TimberUtil {
                 }
                 sb.append(MIDDLE_BORDER).append(LINE_SEP)
             }
-            for (line in msg.split(LINE_SEP.toRegex()).toTypedArray()) {
+            for (line in msg.split(LINE_SEP)) {
                 sb.append(LEFT_BORDER).append(line).append(LINE_SEP)
             }
             sb.append(BOTTOM_BORDER)

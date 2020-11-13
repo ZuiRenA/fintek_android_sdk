@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.UtilsBridge
 import org.json.JSONArray
 import org.json.JSONException

@@ -3,6 +3,7 @@ package com.fintek.util
 
 import android.app.Application
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.log.TimberUtil
 
 /**
  * Created by ChaoShen on 2020/11/4
@@ -13,6 +14,7 @@ class MyApplication : Application() {
         super.onCreate()
 
         FintekUtils.init(this)
+        TimberUtil.getConfig().setStackOffset(2)
     }
 
     companion object {
