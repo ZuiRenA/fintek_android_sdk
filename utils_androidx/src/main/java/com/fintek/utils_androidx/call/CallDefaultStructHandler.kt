@@ -25,11 +25,11 @@ class CallDefaultStructHandler : ICallStruct<CallLog> {
 
         val callLog = CallLog()
         callLog.apply {
-            name = cursor.getString(AndroidCallLog.Calls.CACHED_NAME.columnIndex())
-            phone = cursor.getString(AndroidCallLog.Calls.NUMBER.columnIndex())
-            type = cursor.getType(AndroidCallLog.Calls.TYPE.columnIndex())
-            time = cursor.getLong(AndroidCallLog.Calls.DATE.columnIndex())
-            duration = cursor.getInt(AndroidCallLog.Calls.DURATION.columnIndex())
+            name = cursor.getString(columns.getAssertNotNull(AndroidCallLog.Calls.CACHED_NAME.columnIndex()))
+            phone = cursor.getString(columns.getAssertNotNull(AndroidCallLog.Calls.NUMBER.columnIndex()))
+            type = cursor.getType(columns.getAssertNotNull(AndroidCallLog.Calls.TYPE.columnIndex()))
+            time = cursor.getLong(columns.getAssertNotNull(AndroidCallLog.Calls.DATE.columnIndex()))
+            duration = cursor.getInt(columns.getAssertNotNull(AndroidCallLog.Calls.DURATION.columnIndex()))
         }
 
         return callLog

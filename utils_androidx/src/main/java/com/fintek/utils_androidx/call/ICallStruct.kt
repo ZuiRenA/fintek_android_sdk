@@ -32,4 +32,9 @@ interface ICallStruct<T> {
         if (index == -1) throw IllegalArgumentException("Can't find $this in queryColumns[${queryColumns()}]")
         return index
     }
+
+    fun <E> SparseArrayCompat<E>.getAssertNotNull(index: Int): E {
+        val e = this.get(index)
+        return checkNotNull(e)
+    }
 }

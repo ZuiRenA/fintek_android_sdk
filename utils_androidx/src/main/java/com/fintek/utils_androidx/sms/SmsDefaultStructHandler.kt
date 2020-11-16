@@ -8,6 +8,7 @@ import android.provider.ContactsContract
 import android.provider.Telephony
 import androidx.annotation.RequiresApi
 import androidx.collection.SparseArrayCompat
+import com.fintek.utils_androidx.common.ext.getAssertNotNull
 import com.fintek.utils_androidx.model.Sms
 import java.util.*
 

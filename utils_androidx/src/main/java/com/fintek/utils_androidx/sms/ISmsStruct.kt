@@ -4,9 +4,6 @@ import android.content.ContentResolver
 import android.database.Cursor
 import androidx.collection.SparseArrayCompat
 
-///////////////////////////////////////////////////////////////////////////
-// interface
-///////////////////////////////////////////////////////////////////////////
 interface ISmsStruct<T> {
 
     /**
@@ -20,9 +17,4 @@ interface ISmsStruct<T> {
      * @return T is struct type
      */
     fun structHandler(columnIndex: SparseArrayCompat<Int>, cursor: Cursor, contentResolver: ContentResolver): T?
-
-    fun <E> SparseArrayCompat<E>.getAssertNotNull(index: Int): E {
-        val e = this.get(index)
-        return checkNotNull(e)
-    }
 }
