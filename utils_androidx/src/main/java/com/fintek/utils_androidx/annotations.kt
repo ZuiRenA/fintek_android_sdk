@@ -7,7 +7,7 @@ package com.fintek.utils_androidx
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
-annotation class Optional(
+internal annotation class Optional(
     /**
      * example text
      */
@@ -16,5 +16,23 @@ annotation class Optional(
     /**
      * example texts
      */
-    val anyOf: Array<String> = []
+    val anyOf: Array<String> = [],
+)
+
+/**
+ * Param nullable, most of the time used in struct
+ */
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.SOURCE)
+@MustBeDocumented
+internal annotation class OptionalInt(
+    /**
+     * example text
+     */
+    val example: Int = 0,
+
+    /**
+     * example texts
+     */
+    val anyOf: IntArray = [],
 )

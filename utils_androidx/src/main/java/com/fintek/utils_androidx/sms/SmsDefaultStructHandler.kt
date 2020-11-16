@@ -16,7 +16,7 @@ import java.util.*
  */
 
 @RequiresApi(Build.VERSION_CODES.KITKAT)
-internal class SmsDefaultProjection : IStructProjection<Sms> {
+internal class SmsDefaultStructHandler : ISmsStruct<Sms> {
 
     private fun String.projectionIndex(): Int = projection().indexOf(this)
 

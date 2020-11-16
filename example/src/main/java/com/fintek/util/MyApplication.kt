@@ -14,7 +14,6 @@ class MyApplication : Application() {
         super.onCreate()
 
         FintekUtils.init(this)
-        TimberUtil.getConfig().setStackOffset(2)
     }
 
     companion object {

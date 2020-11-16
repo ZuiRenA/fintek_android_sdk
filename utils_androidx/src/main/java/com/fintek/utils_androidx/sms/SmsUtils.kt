@@ -8,6 +8,8 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.common.QueryOrder
+import com.fintek.utils_androidx.common.SmsQueryOrder
 import com.fintek.utils_androidx.model.Sms
 
 object SmsUtils {
@@ -17,7 +19,7 @@ object SmsUtils {
     private const val SMS_URI = "content://sms/"
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    private val CONFIG = SmsDefaultProjection()
+    private val DEFAULT = SmsDefaultStructHandler()
 
     /**
      * get all sms info
@@ -31,13 +33,13 @@ object SmsUtils {
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS])
     fun getAllSms(
         sortOrder: QueryOrder = SmsQueryOrder.DateDESC,
-    ): List<Sms> = getAllSms(sortOrder, CONFIG)
+    ): List<Sms> = getAllSms(sortOrder, DEFAULT)
 
     /**
      * get all sms info
      *
      * @param sortOrder cursor sort desc or asc
-     * @param projection sms struct handler example see [SmsDefaultProjection]
+     * @param projection sms struct handler example see [SmsDefaultStructHandler]
      * @return struct list
      */
     @JvmStatic
@@ -46,7 +48,7 @@ object SmsUtils {
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS])
     fun <T> getAllSms(
         sortOrder: QueryOrder = SmsQueryOrder.DateDESC,
-        projection: IStructProjection<T>,
+        projection: ISmsStruct<T>,
     ): List<T> {
         var cursor: Cursor? = null
         try {
@@ -77,16 +79,4 @@ object SmsUtils {
     }
 }
 
-sealed class QueryOrder {
-    internal abstract val toSortOrder: String
-}
 
-sealed class SmsQueryOrder : QueryOrder() {
-    object DateDESC : SmsQueryOrder() {
-        override val toSortOrder: String = "date desc"
-    }
-
-    object DateASC : SmsQueryOrder() {
-        override val toSortOrder: String = "date asc"
-    }
-}
