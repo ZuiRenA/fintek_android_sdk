@@ -1,22 +1,16 @@
 package com.fintek.util;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.ExifInterface;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 
 import com.fintek.util_example.R;
 import com.fintek.utils_androidx.image.ImageUtils;
-import com.fintek.utils_androidx.log.Timber;
 import com.fintek.utils_androidx.log.TimberUtil;
-import com.fintek.utils_androidx.log.TimberUtilKt;
+import com.fintek.utils_androidx.model.ImageInfo;
+import com.fintek.utils_androidx.model.Sms;
+import com.fintek.utils_androidx.sms.SmsUtils;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -29,6 +23,15 @@ public class MainJavaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_java);
 
-        TimberUtil.e(1, 2, "", "4");
+
+        List<String> imagePathList = ImageUtils.getImageList();
+        StringBuilder sb = new StringBuilder();
+        for (String path : imagePathList) {
+            ImageInfo info = ImageUtils.getImageParams(path);
+            if (info != null) {
+                sb.append("[").append(info.toString()).append("]\n");
+            }
+        }
+        TimberUtil.e(sb.toString());
     }
 }

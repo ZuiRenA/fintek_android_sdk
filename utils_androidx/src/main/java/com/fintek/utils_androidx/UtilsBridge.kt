@@ -1,5 +1,8 @@
 package com.fintek.utils_androidx
 
+import android.content.ContentResolver
+import android.database.Cursor
+import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.app.AppUtils
 import com.fintek.utils_androidx.file.FileIOUtils
 import com.fintek.utils_androidx.file.FileUtils

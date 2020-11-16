@@ -41,7 +41,9 @@ class TimberConfig {
     private var saveDays                    = -1          // The save days of log.
     private var processName: String?        = UtilsBridge.getCurrentProcessName()
     internal var fileWriter: IFileWriter?   = null
+        private set
     internal var jsonConvert: IJsonConvert? = null
+        private set
 
     fun setLogSwitch(logSwitch: Boolean) = apply {
         this.logSwitch = logSwitch
@@ -129,6 +131,10 @@ class TimberConfig {
 
     fun setFileWriter(fileWriter: IFileWriter) = apply {
         this.fileWriter = fileWriter
+    }
+
+    fun setJsonConvert(jsonConvert: IJsonConvert) = apply {
+        this.jsonConvert = jsonConvert
     }
 
     fun getProcessName(): String = if (processName == null) "" else checkNotNull(processName).replace(":", "_")

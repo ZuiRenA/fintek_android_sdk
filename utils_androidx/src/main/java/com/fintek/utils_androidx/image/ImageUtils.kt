@@ -6,8 +6,11 @@ import android.graphics.Bitmap
 import android.media.ExifInterface
 import android.os.Build
 import android.provider.MediaStore
+import androidx.annotation.Nullable
 import androidx.annotation.RequiresPermission
+import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.model.ImageInfo
 import java.io.File
 import java.io.IOException
 
@@ -15,7 +18,6 @@ import java.io.IOException
  * Created by ChaoShen on 2020/11/4
  */
 object ImageUtils {
-
 
     /**
      * get all image
@@ -57,33 +59,58 @@ object ImageUtils {
      *         [java.io.FileInputStream#getFD()].
      * @return [android.media.ExifInterface]
      */
+    @Nullable
     @Throws(IOException::class)
     @JvmStatic
-    fun String.getExifInterface(): ExifInterface = ExifInterface(this)
+    fun String.getExifInterface(): ExifInterface? = try {
+        ExifInterface(this)
+    } catch (e: Exception) {
+        // use try catch to ignore error log in console
+        null
+    }
+
 
     /**
-     * Default will get GPS info and DATETIME, If you need other params please put other TAG in
-     * [android.media.ExifInterface]
-     * @param params TAG in [android.media.ExifInterface]
-     * @return params map if you need get value please use TAG in [params]
+     * Get image info by file path
+     *
+     * this function have [ImageInfo.size]
+     * @param path file path
+     * @return [ImageInfo]
      */
     @JvmStatic
-    @JvmOverloads
-    fun ExifInterface.getImageParams(vararg params: String = arrayOf(
-            ExifInterface.TAG_GPS_LATITUDE, ExifInterface.TAG_GPS_LATITUDE_REF,
-            ExifInterface.TAG_GPS_LONGITUDE, ExifInterface.TAG_GPS_LONGITUDE_REF,
-            ExifInterface.TAG_DATETIME
-    )): Map<String, String?> {
-        if (params.isEmpty()) return emptyMap()
+    fun getImageParams(path: String) = path.getExifInterface()?.getImageParams(
+        ImageDefaultParamsHandler(filePath = path)
+    )
 
-        val paramsMap: HashMap<String, String?> = HashMap(8)
+    /**
+     * Get image info @see [ImageInfo]
+     *
+     * this function will not have [ImageInfo.size], if you need size please use [getImageParams]
+     * @return [ImageInfo]
+     */
+    @JvmStatic
+    fun ExifInterface.getImageParams(): ImageInfo = getImageParams(ImageDefaultParamsHandler())
 
-        params.forEach {
-            val attribute = getAttribute(it)
-            paramsMap[it] = attribute
+    /**
+     * Get image info Custom
+     * @return [T] is custom struct
+     */
+    @JvmStatic
+    fun <T> ExifInterface.getImageParams(
+        paramsStructHandler: IImageStruct<T>
+    ): T {
+        val sparseArrayCompat = SparseArrayCompat<String>()
+        val params = paramsStructHandler.queryAttributeParams()
+        if (params.isEmpty()) {
+            //please handle empty status in your IImageStruct
+            return paramsStructHandler.structHandler(sparseArrayCompat)
         }
 
-        return paramsMap
+        params.forEachIndexed { index, param ->
+            sparseArrayCompat.put(index, getAttribute(param))
+        }
+
+        return paramsStructHandler.structHandler(sparseArrayCompat)
     }
 
 

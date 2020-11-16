@@ -23,28 +23,40 @@ object TimberUtil {
     fun getConfig() = CONFIG
 
     @JvmStatic
-    @JvmOverloads
-    fun v(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.V, tag, contents = contents)
+    fun v(vararg contents: Any?) = log(Timber.V, CONFIG.getGlobalTag(), contents = contents)
 
     @JvmStatic
-    @JvmOverloads
-    fun d(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.D, tag, contents = contents)
+    fun vTag(tag: String, vararg contents: Any?) = log(Timber.V, tag, contents = contents)
 
     @JvmStatic
-    @JvmOverloads
-    fun i(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.I, tag, contents = contents)
+    fun d(vararg contents: Any?) = log(Timber.D, CONFIG.getGlobalTag(), contents = contents)
 
     @JvmStatic
-    @JvmOverloads
-    fun w(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.W, tag, contents = contents)
+    fun dTag(tag: String, vararg contents: Any?) = log(Timber.D, tag, contents = contents)
 
     @JvmStatic
-    @JvmOverloads
-    fun e(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.E, tag, contents = contents)
+    fun i(vararg contents: Any?) = log(Timber.I, CONFIG.getGlobalTag(), contents = contents)
 
     @JvmStatic
-    @JvmOverloads
-    fun a(tag: String = CONFIG.getGlobalTag(), vararg contents: Any?) = log(Timber.A, tag, contents = contents)
+    fun iTag(tag: String, vararg contents: Any?) = log(Timber.I, tag, contents = contents)
+
+    @JvmStatic
+    fun w(vararg contents: Any?) = log(Timber.W, CONFIG.getGlobalTag(), contents = contents)
+
+    @JvmStatic
+    fun wTag(tag: String, vararg contents: Any?) = log(Timber.W, tag, contents = contents)
+
+    @JvmStatic
+    fun e(vararg contents: Any?) = log(Timber.E, CONFIG.getGlobalTag(), contents = contents)
+
+    @JvmStatic
+    fun eTag(tag: String, vararg contents: Any?) = log(Timber.E, tag, contents = contents)
+
+    @JvmStatic
+    fun a(vararg contents: Any?) = log(Timber.A, CONFIG.getGlobalTag(), contents = contents)
+
+    @JvmStatic
+    fun aTag(tag: String, vararg contents: Any?) = log(Timber.A, tag, contents = contents)
 
     @JvmStatic
     @JvmOverloads
@@ -539,7 +551,7 @@ sealed class Timber(internal val logLevel: Int, internal val logChar: Char) {
     object E : Timber(Log.ERROR, 'E')
     object A : Timber(Log.ASSERT, 'A')
 
-    companion object {
+    private companion object {
         fun Int.toTimber(): Timber = when(this) {
             Log.VERBOSE -> V
             Log.DEBUG -> D
