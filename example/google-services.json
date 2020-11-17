@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "68064102208",
+    "firebase_url": "https://supermarket-6f505.firebaseio.com",
+    "project_id": "supermarket-6f505",
+    "storage_bucket": "supermarket-6f505.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:68064102208:android:ec576d8b26f9b5c5681ca5",
+        "android_client_info": {
+          "package_name": "com.fintek.supermarket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "68064102208-tm92ba0rbb9qm0ilpvcs6jigo3alo1gi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7WUsQ11Nwr2g1Rewksi8IibFbRN0cegk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "68064102208-tm92ba0rbb9qm0ilpvcs6jigo3alo1gi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -54,7 +54,7 @@ object ImageUtils {
     /**
      * provide extension method to get ExifInterface
      *
-     * [String] file path
+     * @receiver [String] file path
      * @throws IOException if an I/O error occurs while retrieving file descriptor via
      *         [java.io.FileInputStream#getFD()].
      * @return [android.media.ExifInterface]
@@ -86,6 +86,8 @@ object ImageUtils {
      * Get image info @see [ImageInfo]
      *
      * this function will not have [ImageInfo.size], if you need size please use [getImageParams]
+     *
+     * @receiver [ExifInterface]
      * @return [ImageInfo]
      */
     @JvmStatic
@@ -117,7 +119,7 @@ object ImageUtils {
     /**
      * Get file size by path
      *
-     * [String] file path
+     * @receiver [String] file path
      * @return byte
      */
     @JvmStatic
@@ -126,7 +128,7 @@ object ImageUtils {
     /**
      * Get bitmap size
      *
-     * [Bitmap] bitmap
+     * @receiver [Bitmap] bitmap
      * @return byte
      */
     @JvmStatic

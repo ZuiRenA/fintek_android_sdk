@@ -1,10 +1,10 @@
-package com.fintek.utils_androidx
+package com.fintek.utils_androidx.process
 
 import android.app.ActivityManager
-import android.app.Application
 import android.content.Context
 import android.os.Process
 import android.text.TextUtils
+import com.fintek.utils_androidx.FintekUtils
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
