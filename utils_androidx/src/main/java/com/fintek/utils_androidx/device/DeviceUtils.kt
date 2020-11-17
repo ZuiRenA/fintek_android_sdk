@@ -28,12 +28,6 @@ object DeviceUtils {
         FintekUtils.requiredContext.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
     }
 
-    private val connectivityManager: ConnectivityManager? by lazy {
-        FintekUtils.requiredContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-    }
-
-    private val NETWORK_CALLBACK_STACK = Stack<ConnectivityManager.NetworkCallback>()
-
     /**
      * - if SDK_INT < 29 use [getDeviceId] it will return deviceId, but sometimes will ***null***
      * - if SDK_INT >= 29 if [isCustomIdentify] will use [getUniquePseudoId] else use [getImei].
@@ -245,66 +239,6 @@ object DeviceUtils {
             )
             !locationProviders.isNullOrEmpty()
         }
-    }
-
-    /**
-     * Return whether to enable network
-     */
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    fun isNetworkEnable(): Boolean {
-        val networkInfo = connectivityManager?.activeNetworkInfo
-        return networkInfo?.isAvailable ?: false
-    }
-
-    /**
-     * Register callback to listen network state
-     *
-     * @param callback callback invoke network state change
-     */
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun registerNetworkCallback(callback: ConnectivityManager.NetworkCallback) {
-        NETWORK_CALLBACK_STACK.push(callback)
-        connectivityManager?.registerDefaultNetworkCallback(callback)
-    }
-
-    /**
-     * Unregister callback
-     *
-     * @param callback listening callback
-     */
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun unregisterNetworkCallback(callback: ConnectivityManager.NetworkCallback) {
-        connectivityManager?.unregisterNetworkCallback(callback)
-    }
-
-    /**
-     * Remove the stack last callback from [ConnectivityManager]
-     */
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun removeLastNetworkCallback() {
-        val callback = NETWORK_CALLBACK_STACK.pop()
-        unregisterNetworkCallback(callback)
-    }
-
-    /**
-     * Remove the stack all callback from [ConnectivityManager]
-     */
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun removeAllNetworkCallback() {
-        for (networkCallback in NETWORK_CALLBACK_STACK) {
-            unregisterNetworkCallback(networkCallback)
-        }
-
-        NETWORK_CALLBACK_STACK.clear()
     }
 
     /**

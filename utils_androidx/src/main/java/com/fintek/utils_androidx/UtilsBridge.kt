@@ -123,5 +123,4 @@ internal object UtilsBridge {
             TimberUtil.aTag(tag = FintekUtils.TAG, contents = contents)
         }
     }
-
 }
