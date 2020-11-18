@@ -35,8 +35,9 @@ internal object UtilsBridge {
     ///////////////////////////////////////////////////////////////////////////
     // Thread
     ///////////////////////////////////////////////////////////////////////////
-    fun <T> executeSingle(task: Task<T>) {
+    fun <T> executeSingle(task: Task<T>): Task<T> {
         ThreadUtils.executeBySingle(task)
+        return task
     }
 
     fun runOnUiThread(runnable: Runnable) {

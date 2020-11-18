@@ -3,7 +3,6 @@ package com.fintek.utils_androidx.device
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
@@ -11,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
+import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import java.io.File
 import java.util.*
 
@@ -134,12 +134,16 @@ object DeviceUtils {
      * - `implementation 'com.google.android.gms:play-services-analytics:17.0.0'` in gradle
      * - `apply plugin: 'com.google.gms.google-services'` in used module gradle
      *
-     * @param task [com.fintek.utils_androidx.thread.Task]，please don't modify [GaidTask.doInBackground]
+     * @param consumer [com.fintek.utils_androidx.FintekUtils.Task]
      * @return the gaid(Google advertising id), this function is async
      */
     @JvmStatic
-    fun getGaid(task: GaidTask) {
-        UtilsBridge.executeSingle(task)
+    fun getGaid(consumer: FintekUtils.Consumer<String>) {
+        UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+            override fun doInBackground(): String {
+                return AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
+            }
+        })
     }
 
     /**

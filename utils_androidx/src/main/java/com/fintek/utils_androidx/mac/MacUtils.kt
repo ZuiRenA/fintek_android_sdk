@@ -15,8 +15,6 @@ object MacUtils {
     )
 
     private const val INVALID_MAC_ADDRESS = "02:00:00:00:00:00"
-    private const val INVALID_ANDROID_ID  = "9774d56d682e549c"
-
 
     /**
      * Return long mac

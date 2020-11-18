@@ -4,6 +4,7 @@ import android.annotation.TargetApi
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import com.fintek.utils_androidx.thread.SimpleTask
 
 /**
  * Created by ChaoShen on 2020/11/4
@@ -34,5 +35,22 @@ object FintekUtils {
     @JvmStatic
     fun init(context: Context) {
         this.context = context
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // interface
+    ///////////////////////////////////////////////////////////////////////////
+    abstract class Task<Result> @JvmOverloads constructor (
+        private val consumer: Consumer<Result>? = null
+    ) : SimpleTask<Result>() {
+
+        override fun onSuccess(result: Result) {
+            consumer?.accept(result)
+        }
+    }
+
+    interface Consumer<T> {
+        fun accept(t: T)
     }
 }

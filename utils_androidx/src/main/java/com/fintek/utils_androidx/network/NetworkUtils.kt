@@ -1,17 +1,24 @@
 package com.fintek.utils_androidx.network
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.icu.text.UFormat
 import android.net.ConnectivityManager
+import android.net.MacAddress
+import android.net.NetworkInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
-import com.fintek.utils_androidx.device.DeviceUtils
+import com.fintek.utils_androidx.thread.Task
+import java.net.*
 import java.util.*
 
 
@@ -28,9 +35,11 @@ object NetworkUtils {
         NETWORK_NO
     }
 
-    private val connectivityManager: ConnectivityManager? by lazy {
-        FintekUtils.requiredContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-    }
+    private val connectivityManager: ConnectivityManager?
+        get() = FintekUtils.requiredContext.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+
+    private val wifiManager: WifiManager?
+        get() = FintekUtils.requiredContext.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
 
     private val NETWORK_CALLBACK_STACK = Stack<ConnectivityManager.NetworkCallback>()
 
@@ -155,6 +164,7 @@ object NetworkUtils {
      * Return whether using 5G.
      */
     @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.Q)
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun is5G(): Boolean {
         val info = connectivityManager?.activeNetworkInfo ?: return false
@@ -170,5 +180,444 @@ object NetworkUtils {
     fun is4G(): Boolean {
         val info = connectivityManager?.activeNetworkInfo ?: return false
         return info.isAvailable && info.subtype == TelephonyManager.NETWORK_TYPE_LTE
+    }
+
+
+    /**
+     * Return whether wifi is enabled.
+     *
+     * @return true: enable
+     *
+     * false: disable
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun isWifiEnable(): Boolean = wifiManager?.isWifiEnabled ?: false
+
+    /**
+     * Enable or disable wifi.
+     *
+     * @param enabled True to enabled, false otherwise.
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_WIFI_STATE])
+    fun setWifiEnable(enabled: Boolean) {
+        if (wifiManager == null)  return
+        if (enabled == isWifiEnable()) return
+        wifiManager?.isWifiEnabled = enabled
+    }
+
+    /**
+     * Return whether wifi is connected.
+     *
+     * @return true: connected
+     *
+     * false: disconnected
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    fun isWifiConnected(): Boolean {
+        val info = connectivityManager?.activeNetworkInfo ?: return false
+        return info.type == ConnectivityManager.TYPE_WIFI
+    }
+
+    /**
+     * Return the name of network operate
+     *
+     * @return the name of network operate
+     */
+    @JvmStatic
+    fun getNetworkOperatorName(): String {
+        val tm = FintekUtils.requiredContext.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+        return tm?.networkOperatorName ?: ""
+    }
+
+    /**
+     * Return type of network.
+     *
+     * @return type of network
+     * - [NetworkType.NETWORK_ETHERNET]
+     * - [NetworkType.NETWORK_WIFI]
+     * - [NetworkType.NETWORK_4G]
+     * - [NetworkType.NETWORK_3G]
+     * - [NetworkType.NETWORK_2G]
+     * - [NetworkType.NETWORK_UNKNOWN]
+     * - [NetworkType.NETWORK_NO]
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    fun getNetworkType(): NetworkType {
+        if (isEthernet()) return NetworkType.NETWORK_ETHERNET
+
+        val info = connectivityManager?.activeNetworkInfo
+        if (info != null && info.isAvailable) {
+            when (info.type) {
+                ConnectivityManager.TYPE_WIFI -> return NetworkType.NETWORK_WIFI
+                ConnectivityManager.TYPE_MOBILE -> return when(info.subtype) {
+                    TelephonyManager.NETWORK_TYPE_GSM, TelephonyManager.NETWORK_TYPE_GPRS,
+                    TelephonyManager.NETWORK_TYPE_CDMA, TelephonyManager.NETWORK_TYPE_EDGE,
+                    TelephonyManager.NETWORK_TYPE_1xRTT, TelephonyManager.NETWORK_TYPE_IDEN -> {
+                        NetworkType.NETWORK_2G
+                    }
+
+                    TelephonyManager.NETWORK_TYPE_TD_SCDMA, TelephonyManager.NETWORK_TYPE_EVDO_A,
+                    TelephonyManager.NETWORK_TYPE_UMTS, TelephonyManager.NETWORK_TYPE_EVDO_0,
+                    TelephonyManager.NETWORK_TYPE_HSDPA, TelephonyManager.NETWORK_TYPE_HSUPA,
+                    TelephonyManager.NETWORK_TYPE_EVDO_B, TelephonyManager.NETWORK_TYPE_EHRPD,
+                    TelephonyManager.NETWORK_TYPE_HSPAP -> {
+                        NetworkType.NETWORK_3G
+                    }
+
+                    TelephonyManager.NETWORK_TYPE_IWLAN, TelephonyManager.NETWORK_TYPE_LTE -> {
+                        NetworkType.NETWORK_4G
+                    }
+
+                    TelephonyManager.NETWORK_TYPE_NR -> NetworkType.NETWORK_5G
+
+                    else -> {
+                        val subTypeName = info.subtypeName
+                        if (subTypeName.equals("TD-SCDMA", true)
+                            || subTypeName.equals("WCDMA", true)
+                            || subTypeName.equals("CDMA2000", true)) {
+                            NetworkType.NETWORK_3G
+                        } else {
+                            NetworkType.NETWORK_UNKNOWN
+                        }
+                    }
+                }
+                else -> return NetworkType.NETWORK_UNKNOWN
+            }
+
+        }
+        return NetworkType.NETWORK_NO
+    }
+
+    /**
+     * Return the ip address.
+     *
+     * @param useIPv4 True to use ipv4, false otherwise.
+     * @param consumer The consumer
+     * @return the task
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.INTERNET)
+    fun getIPAddressAsync(
+        useIPv4: Boolean,
+        consumer: FintekUtils.Consumer<String>
+    ): Task<String> = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+
+        @RequiresPermission(Manifest.permission.INTERNET)
+        override fun doInBackground(): String {
+            return getIPAddress(useIPv4)
+        }
+    })
+
+    /**
+     * Return the ip address.
+     * @param useIPv4 True to use ipv4, false otherwise.
+     * @return the ip address
+     */
+    @SuppressLint("DefaultLocale")
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.INTERNET)
+    fun getIPAddress(useIPv4: Boolean): String {
+        try {
+            val nis = NetworkInterface.getNetworkInterfaces()
+            val adds = LinkedList<InetAddress>()
+
+            while (nis.hasMoreElements()) {
+                val ni = nis.nextElement()
+                // To prevent phone of xiaomi return "10.0.2.15"
+                if (!ni.isUp || ni.isLoopback) continue
+
+                val address = ni.inetAddresses
+                while (address.hasMoreElements()) {
+                    adds.addFirst(address.nextElement())
+                }
+            }
+
+            adds.forEach {
+                if (!it.isLoopbackAddress) {
+                    val hostAddress = it.hostAddress
+                    val isIPv4 = hostAddress.indexOf(':') < 0
+                    if (useIPv4) {
+                        if (isIPv4) return hostAddress
+                    } else {
+                        if (!isIPv4) {
+                            val index = hostAddress.indexOf('%')
+                            return if (index < 0) {
+                                hostAddress.toUpperCase()
+                            } else {
+                                hostAddress.substring(0, index).toUpperCase()
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+
+        return ""
+    }
+
+    /**
+     * Return the ip address of broadcast.
+     *
+     * @return the ip address of broadcast
+     */
+    @JvmStatic
+    fun getBroadcastIPAddress(): String {
+        try {
+            val nis = NetworkInterface.getNetworkInterfaces()
+            while (nis.hasMoreElements()) {
+                val ni = nis.nextElement()
+                if (!ni.isUp || ni.isLoopback) continue
+                val ias = ni.interfaceAddresses
+                val iterator = ias.iterator()
+
+                while (iterator.hasNext()) {
+                    val ia = iterator.next()
+                    val broadcast = ia.broadcast
+                    if (broadcast != null) return broadcast.hostAddress
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+
+        return ""
+    }
+
+    /**
+     * Return the domain address.
+     *
+     * @param domain The name of domain.
+     * @param consumer The consumer
+     * @return the task
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.INTERNET)
+    fun getDomainAsync(
+        domain: String,
+        consumer: FintekUtils.Consumer<String>
+    ): Task<String> = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+        @RequiresPermission(Manifest.permission.INTERNET)
+        override fun doInBackground(): String {
+            return getDomainAddress(domain)
+        }
+    })
+
+    /**
+     * Return the domain address.
+     *
+     * @param domain The name of domain.
+     * @return the domain address
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.INTERNET)
+    fun getDomainAddress(domain: String): String = try {
+        val ia = InetAddress.getByName(domain)
+        ia.hostAddress
+    } catch (e: UnknownHostException) {
+        e.printStackTrace()
+        ""
+    }
+
+    /**
+     * Return the ip address by wifi.
+     *
+     * @return the ip address by wifi
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getIpAddressByWifi(): String {
+        val wm = wifiManager ?: return ""
+        return Formatter.formatIpAddress(wm.dhcpInfo.ipAddress)
+    }
+
+    /**
+     * Return the ip address by wifi.
+     *
+     * @return the ip address by wifi
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getGatewayByWifi(): String {
+        val wm = wifiManager ?: return ""
+        return Formatter.formatIpAddress(wm.dhcpInfo.gateway)
+    }
+
+    /**
+     * Return the net mask by wifi.
+     *
+     * @return the net mask by wifi
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getNetMaskByWifi(): String {
+        val wm = wifiManager ?: return ""
+        return Formatter.formatIpAddress(wm.dhcpInfo.netmask)
+    }
+
+    /**
+     * Return the server address by wifi.
+     *
+     * @return the server address by wifi
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getServerAddressByWifi(): String {
+        val wm = wifiManager ?: return ""
+        return Formatter.formatIpAddress(wm.dhcpInfo.serverAddress)
+    }
+
+    /**
+     * Return the bssid.
+     *
+     * e.g. dc:8c:37:e5:cd:ac
+     *
+     * @return the bssid.
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getBSSID(): String {
+        val wm = wifiManager ?: return ""
+        val wi = wm.connectionInfo ?: return ""
+
+        val bssid = wi.bssid
+        if (bssid.isNullOrEmpty()) return ""
+        return bssid
+    }
+
+    /**
+     * Return the bssid list.
+     *
+     * @return the bssid list.
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
+    fun getConfiguredBSSID(): List<String> {
+        val wm = wifiManager ?: return emptyList()
+        return try {
+            wm.configuredNetworks.map { it.BSSID }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Return connecting wifi name, it is same with [getSSID]
+     *
+     * @return the name
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getConnectingWifiName(): String {
+        return getSSID()
+    }
+
+    /**
+     * Return the ssid.
+     *
+     * @return the ssid.
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getSSID(): String {
+        val wm = wifiManager ?: return ""
+        val wi = wm.connectionInfo ?: return ""
+
+        val ssid = wi.ssid
+        if (ssid.isNullOrEmpty()) return ""
+
+        if (ssid.length > 2 && ssid[0] == '"' && ssid[ssid.lastIndex] == '"') {
+            return ssid.substring(1, ssid.lastIndex)
+        }
+        return ssid
+    }
+
+    /**
+     * Return the ssid list.
+     *
+     * @return the ssid list.
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
+    fun getConfiguredSSID(): List<String> {
+        val wm = wifiManager ?: return emptyList()
+
+        return try {
+            wm.configuredNetworks.map {
+                if (it.SSID.length > 2 && it.SSID[0] == '"' && it.SSID[it.SSID.lastIndex] == '"') {
+                    it.SSID.substring(1, it.SSID.lastIndex)
+                } else {
+                    it.SSID
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Return mac by wifi
+     *
+     * Sometimes it will be "02:00:00:00:00:00", this time please use
+     * [com.fintek.utils_androidx.mac.MacUtils.getMacAddress]
+     *
+     * @return the wifi address
+     */
+    @JvmStatic
+    @SuppressLint("HardwareIds")
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getMacByWifi(): String {
+        val wm = wifiManager ?: return ""
+        val wi = wm.connectionInfo ?: return ""
+
+        val wifiAddress = wi.macAddress
+        if (wifiAddress.isNullOrEmpty()) return ""
+        return wifiAddress
+    }
+
+    /**
+     * Return mac list by wifi
+     *
+     * It will return always emptyList() when SDK_INT < 29 [Build.VERSION_CODES.Q]
+     * use reflect try to get it to ignore throwable/exception
+     *
+     * @return the wifi address list
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
+    fun getConfiguredMacByWifi(): List<String> {
+        val wm = wifiManager ?: return emptyList()
+        val configuredNetworks = wm.configuredNetworks
+        return try {
+            configuredNetworks.map {
+                val method = it.javaClass.getDeclaredMethod("getRandomizedMacAddress")
+                val macAddress: Any? = method.invoke(null)
+                macAddress.toString()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        } catch (t: Throwable) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Return whether using ethernet.
+     * @return true: yes
+     *
+     * false: no
+     */
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun isEthernet(): Boolean {
+        val info = connectivityManager?.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET) ?: return false
+        val state = info.state ?: return false
+        return state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING
     }
 }
