@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.icu.text.UFormat
 import android.net.ConnectivityManager
+import android.net.LinkProperties
 import android.net.MacAddress
 import android.net.NetworkInfo
 import android.net.wifi.WifiManager
@@ -18,6 +19,9 @@ import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.thread.Task
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.LineNumberReader
 import java.net.*
 import java.util.*
 
@@ -232,6 +236,12 @@ object NetworkUtils {
         return tm?.networkOperatorName ?: ""
     }
 
+    @JvmStatic
+    fun getNetworkOperator(): String {
+        val tm = FintekUtils.requiredContext.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+        return tm?.networkOperator ?: ""
+    }
+
     /**
      * Return type of network.
      *
@@ -290,6 +300,49 @@ object NetworkUtils {
 
         }
         return NetworkType.NETWORK_NO
+    }
+
+    /**
+     * Return dns async
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    fun getDnsAsync(
+        consumer: FintekUtils.Consumer<String>
+    ) = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+        @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+        override fun doInBackground(): String {
+            return getDns()
+        }
+    })
+
+
+    /**
+     * Return Dns
+     *
+     * @return dns
+     */
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    fun getDns(): String {
+        /**
+         * 获取dns
+         */
+        var dnsServers = getDnsFromCommand()
+        if (dnsServers == null || dnsServers.isEmpty()) {
+            dnsServers = getDnsFromConnectionManager()
+        }
+        /**
+         * 组装
+         */
+        val sb = StringBuffer()
+        if (dnsServers != null) {
+            for (i in dnsServers.indices) {
+                sb.append(dnsServers[i])
+                sb.append(" / ")
+            }
+        }
+        return sb.toString()
     }
 
     /**
@@ -619,5 +672,75 @@ object NetworkUtils {
         val info = connectivityManager?.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET) ?: return false
         val state = info.state ?: return false
         return state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING
+    }
+
+
+    /**
+     * Use getprop to get dns
+     */
+    private fun getDnsFromCommand(): Array<String?>? {
+        val dnsServers: LinkedList<String> = LinkedList()
+        try {
+            val process = Runtime.getRuntime().exec("getprop")
+            val inputStream: InputStream = process.inputStream
+            val lnr = LineNumberReader(InputStreamReader(inputStream))
+            var line: String? = null
+            while (lnr.readLine().also { line = it } != null) {
+                val split = line!!.indexOf("]: [")
+                if (split == -1) continue
+                val property = line!!.substring(1, split)
+                var value = line!!.substring(split + 4, line!!.length - 1)
+                if (property.endsWith(".dns")
+                    || property.endsWith(".dns1")
+                    || property.endsWith(".dns2")
+                    || property.endsWith(".dns3")
+                    || property.endsWith(".dns4")
+                ) {
+                    val ip: InetAddress = InetAddress.getByName(value) ?: continue
+                    value = ip.hostAddress
+                    if (value == null) continue
+                    if (value.isEmpty()) continue
+                    dnsServers.add(value)
+                }
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        return if (dnsServers.isEmpty()) arrayOfNulls(0) else dnsServers.toArray(
+            arrayOfNulls<String>(
+                dnsServers.size
+            )
+        )
+    }
+
+    /**
+     * use connection
+     */
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+    private fun getDnsFromConnectionManager(): Array<String?>? {
+        val dnsServers: LinkedList<String> = LinkedList()
+        if (Build.VERSION.SDK_INT >= 21) {
+            connectivityManager?.let {
+                val activeNetworkInfo: NetworkInfo? = it.activeNetworkInfo
+                if (activeNetworkInfo != null) {
+                    for (network in it.allNetworks) {
+                        val networkInfo: NetworkInfo? = it.getNetworkInfo(network)
+                        if (networkInfo != null && networkInfo.type == activeNetworkInfo.type) {
+                            val lp: LinkProperties? = it.getLinkProperties(network)
+                            lp?.let { properties ->
+                                for (address in properties.dnsServers) {
+                                    dnsServers.add(address.hostAddress)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return if (dnsServers.isEmpty()) arrayOfNulls(0) else dnsServers.toArray(
+            arrayOfNulls<String>(
+                dnsServers.size
+            )
+        )
     }
 }

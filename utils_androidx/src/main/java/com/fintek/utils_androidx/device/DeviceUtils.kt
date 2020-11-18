@@ -244,11 +244,4 @@ object DeviceUtils {
             !locationProviders.isNullOrEmpty()
         }
     }
-
-    /**
-     * Return global locale
-     *
-     * @return [Locale] used
-     */
-    fun getCurrentLocale(): Locale = FintekUtils.requiredContext.resources.configuration.locale
 }
