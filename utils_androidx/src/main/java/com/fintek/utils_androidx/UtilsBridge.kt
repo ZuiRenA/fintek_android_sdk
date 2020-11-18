@@ -40,8 +40,12 @@ internal object UtilsBridge {
         return task
     }
 
-    fun runOnUiThread(runnable: Runnable) {
-        ThreadUtils.runOnUiThread(runnable)
+    fun runOnUiThread(runnable: Runnable, delayMillis: Long = 0L) {
+        if (delayMillis == 0L) {
+            ThreadUtils.runOnUiThread(runnable)
+        } else {
+            ThreadUtils.runOnUiThreadDelay(runnable, delayMillis)
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
