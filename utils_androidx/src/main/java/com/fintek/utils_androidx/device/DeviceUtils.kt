@@ -139,7 +139,7 @@ object DeviceUtils {
      */
     @JvmStatic
     fun getGaid(consumer: FintekUtils.Consumer<String>) {
-        UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+        UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
             override fun doInBackground(): String {
                 return AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
             }

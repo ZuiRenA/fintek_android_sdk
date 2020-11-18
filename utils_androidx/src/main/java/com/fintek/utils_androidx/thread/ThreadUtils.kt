@@ -3,8 +3,10 @@ package com.fintek.utils_androidx.thread
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.CallSuper
+import androidx.annotation.IntRange
 import com.fintek.utils_androidx.UtilsBridge
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
@@ -21,18 +23,607 @@ object ThreadUtils {
     private val TIMER: Timer        = Timer()
     private var sDeliver: Executor? = null
 
+    private val TYPE_PRIORITY_POOLS: MutableMap<Int, MutableMap<Int, ExecutorService>> = HashMap()
 
-    private val singlePool: ExecutorService by lazy { createSinglePool(Thread.NORM_PRIORITY) }
+    private val TASK_POOL_MAP: MutableMap<Task<*>, ExecutorService> = ConcurrentHashMap()
 
+    @JvmStatic
     fun getMainHandler() = HANDLER
 
+    @JvmStatic
     fun runOnUiThread(runnable: Runnable) {
         if (isMainThread) runnable.run()
         else HANDLER.post(runnable)
     }
 
-    fun <T> executeBySingle(task: Task<T>) {
-        execute(singlePool, task)
+    @JvmStatic
+    fun runOnUiThreadDelay(runnable: Runnable, delayMillis: Long) {
+        HANDLER.postDelayed(runnable, delayMillis)
+    }
+
+
+    /**
+     * Return a thread pool that reuses a fixed number of threads
+     * operating off a shared unbounded queue, using the provided
+     * ThreadFactory to create new threads when needed.
+     *
+     * @param size The size of thread in the pool.
+     * @param priority The priority of thread in the poll.
+     * @return a fixed thread pool
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun getFixedPool(
+        @IntRange(from = 1) size: Int,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ): ExecutorService = getPool(size)
+
+    /**
+     * Return a thread pool that uses a single worker thread operating
+     * off an unbounded queue, and uses the provided ThreadFactory to
+     * create a new thread when needed.
+     *
+     * @param priority The priority of thread in the poll.
+     * @return a single thread pool
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun getSinglePool(
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ): ExecutorService = getPool(TYPE_SINGLE, priority)
+
+
+    /**
+     *
+     * Return a thread pool that creates new threads as needed, but
+     * will reuse previously constructed threads when they are
+     * available.
+     *
+     * @return a cached thread pool
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun getCachedPool(
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ): ExecutorService = getPool(TYPE_CACHE, priority)
+
+
+    /**
+     * Return a thread pool that creates (2 * CPU_COUNT + 1) threads
+     * operating off a queue which size is 128.
+     *
+     * @param priority The priority of thread in the poll.
+     * @return a IO thread pool
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun getIoPool(
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ): ExecutorService = getPool(TYPE_IO, priority)
+
+    /**
+     * Return a thread pool that creates (CPU_COUNT + 1) threads
+     * operating off a queue which size is 128 and the maximum
+     * number of threads equals (2 * CPU_COUNT + 1).
+     *
+     * @param priority The priority of thread in the poll.
+     * @return a cpu thread pool for
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun getCpuPool(
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ): ExecutorService = getPool(TYPE_CPU, priority)
+
+
+    /**
+     * Executes the given task in a fixed thread pool.
+     *
+     * @param size     The size of thread in the fixed thread pool.
+     * @param task     The task to execute.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByFixed(
+        @IntRange(from = 1) size: Int,
+        task: Task<T>,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        execute(getPool(size, priority), task)
+    }
+
+    /**
+     * Executes the given task in a fixed thread pool after the given delay.
+     *
+     * @param size     The size of thread in the fixed thread pool.
+     * @param task     The task to execute.
+     * @param delay    The time from now to delay execution.
+     * @param unit     The time unit of the delay parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByFixedWithDelay(
+        @IntRange(from = 1) size: Int,
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeWithDelay(getPool(size, priority), task, delay, unit)
+    }
+
+    /**
+     * Executes the given task in a fixed thread pool at fix rate.
+     *
+     * @param size     The size of thread in the fixed thread pool.
+     * @param task     The task to execute.
+     * @param period   The period between successive executions.
+     * @param unit     The time unit of the period parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByFixedAtFixRate(
+        @IntRange(from = 1) size: Int,
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(size, priority), task, 0, period, unit)
+    }
+
+    /**
+     * Executes the given task in a fixed thread pool at fix rate.
+     *
+     * @param size         The size of thread in the fixed thread pool.
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param priority     The priority of thread in the poll.
+     * @param T            The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByFixedAtFixRate(
+        @IntRange(from = 1) size: Int,
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(size, priority), task, initialDelay, period, unit)
+    }
+
+    /**
+     * Executes the given task in a single thread pool.
+     *
+     * @param task The task to execute.
+     * @param priority The priority of thread in the poll.
+     * @param T  The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeBySingle(
+        task: Task<T>,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        execute(getPool(TYPE_SINGLE, priority), task)
+    }
+
+    /**
+     * Executes the given task in a single thread pool after the given delay.
+     *
+     * @param task     The task to execute.
+     * @param delay    The time from now to delay execution.
+     * @param unit     The time unit of the delay parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeBySingleWithDelay(
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeWithDelay(getPool(TYPE_SINGLE, priority), task, delay, unit)
+    }
+
+    /**
+     * Executes the given task in a single thread pool at fix rate.
+     *
+     * @param task     The task to execute.
+     * @param period   The period between successive executions.
+     * @param unit     The time unit of the period parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+    */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeBySingleAtFixRate(
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_SINGLE, priority), task, 0, period, unit)
+    }
+
+    /**
+     * Executes the given task in a single thread pool at fix rate.
+     *
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param priority     The priority of thread in the poll.
+     * @param T            The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeBySingleAtFixRate(
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_SINGLE, priority), task, initialDelay, period, unit)
+    }
+
+    /**
+     * Executes the given task in a cached thread pool.
+     *
+     * @param task     The task to execute.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCached(
+        task: Task<T>,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        execute(getPool(TYPE_CACHE, priority), task)
+    }
+
+
+    /**
+     * Executes the given task in a cached thread pool after the given delay.
+     *
+     * @param task     The task to execute.
+     * @param delay    The time from now to delay execution.
+     * @param unit     The time unit of the delay parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCachedWithDelay(
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeWithDelay(getPool(TYPE_CACHE, priority), task, delay, unit)
+    }
+
+
+    /**
+     * Executes the given task in a cached thread pool at fix rate.
+     *
+     * @param task     The task to execute.
+     * @param period   The period between successive executions.
+     * @param unit     The time unit of the period parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCachedAtFixRate(
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_CACHE, priority), task, 0, period, unit)
+    }
+
+    /**
+     * Executes the given task in a cached thread pool at fix rate.
+     *
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param priority     The priority of thread in the poll.
+     * @param T            The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCachedAtFixRate(
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_CACHE, priority), task, initialDelay, period, unit)
+    }
+
+    /**
+     * Executes the given task in an IO thread pool.
+     *
+     * @param task     The task to execute.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByIo(
+        task: Task<T>,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        execute(getPool(TYPE_IO, priority), task)
+    }
+
+    /**
+     * Executes the given task in an IO thread pool after the given delay.
+     *
+     * @param task     The task to execute.
+     * @param delay    The time from now to delay execution.
+     * @param unit     The time unit of the delay parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByIoWithDelay(
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeWithDelay(getPool(TYPE_IO, priority), task, delay, unit)
+    }
+
+    /**
+     * Executes the given task in an IO thread pool at fix rate.
+     *
+     * @param task     The task to execute.
+     * @param period   The period between successive executions.
+     * @param unit     The time unit of the period parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByIoAtFixRate(
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_IO, priority), task, 0, period, unit)
+    }
+
+    /**
+     * Executes the given task in an IO thread pool at fix rate.
+     *
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param priority     The priority of thread in the poll.
+     * @param T            The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByIoAtFixRate(
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_IO, priority), task, initialDelay, period, unit)
+    }
+
+    /**
+     * Executes the given task in a cpu thread pool.
+     *
+     * @param task     The task to execute.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCpu(
+        task: Task<T>,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        execute(getPool(TYPE_CPU, priority), task)
+    }
+
+    /**
+     * Executes the given task in a cpu thread pool after the given delay.
+     *
+     * @param task     The task to execute.
+     * @param delay    The time from now to delay execution.
+     * @param unit     The time unit of the delay parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T      The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCpuWithDelay(
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeWithDelay(getPool(TYPE_CPU, priority), task, delay, unit)
+    }
+
+    /**
+     * Executes the given task in a cpu thread pool at fix rate.
+     *
+     * @param task     The task to execute.
+     * @param period   The period between successive executions.
+     * @param unit     The time unit of the period parameter.
+     * @param priority The priority of thread in the poll.
+     * @param T        The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCpuAtFixRate(
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int
+    ) {
+        executeAtFixedRate(getPool(TYPE_CPU, priority), task, 0, period, unit)
+    }
+
+
+    /**
+     * Executes the given task in a cpu thread pool at fix rate.
+     *
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param priority     The priority of thread in the poll.
+     * @param T            The type of the task's result.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T> executeByCpuAtFixRate(
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit,
+        @IntRange(from = 1, to = 10) priority: Int = Thread.NORM_PRIORITY
+    ) {
+        executeAtFixedRate(getPool(TYPE_CPU, priority), task, initialDelay, period, unit)
+    }
+
+    /**
+     * Executes the given task in a custom thread pool.
+     *
+     * @param pool The custom thread pool.
+     * @param task The task to execute.
+     * @param T  The type of the task's result.
+     */
+    @JvmStatic
+    fun <T> executeByCustom(
+        pool: ExecutorService,
+        task: Task<T>
+    ) {
+        execute(pool, task)
+    }
+
+    /**
+     * Executes the given task in a custom thread pool after the given delay.
+     *
+     * @param pool  The custom thread pool.
+     * @param task  The task to execute.
+     * @param delay The time from now to delay execution.
+     * @param unit  The time unit of the delay parameter.
+     * @param T     The type of the task's result.
+     */
+    @JvmStatic
+    fun <T> executeByCustomWithDelay(
+        pool: ExecutorService,
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit
+    ) {
+        executeWithDelay(pool, task, delay, unit)
+    }
+
+    /**
+     * Executes the given task in a custom thread pool at fix rate.
+     *
+     * @param pool   The custom thread pool.
+     * @param task   The task to execute.
+     * @param period The period between successive executions.
+     * @param unit   The time unit of the period parameter.
+     * @param T      The type of the task's result.
+     */
+    fun <T> executeByCustomAtFixRate(
+        pool: ExecutorService,
+        task: Task<T>,
+        period: Long,
+        unit: TimeUnit
+    ) {
+        executeAtFixedRate(pool, task, 0, period, unit)
+    }
+
+    /**
+     * Executes the given task in a custom thread pool at fix rate.
+     *
+     * @param pool         The custom thread pool.
+     * @param task         The task to execute.
+     * @param initialDelay The time to delay first execution.
+     * @param period       The period between successive executions.
+     * @param unit         The time unit of the initialDelay and period parameters.
+     * @param T          The type of the task's result.
+     */
+    fun <T> executeByCustomAtFixRate(
+        pool: ExecutorService,
+        task: Task<T>,
+        initialDelay: Long,
+        period: Long,
+        unit: TimeUnit
+    ) {
+        executeAtFixedRate(pool, task, initialDelay, period, unit)
+    }
+
+    /**
+     * Cancel the tasks in pool
+     * @param executorService the pool
+     */
+    @JvmStatic
+    fun cancel(executorService: ExecutorService) {
+        if (executorService is ThreadPoolExecutor4Util) {
+            TASK_POOL_MAP.forEach { (task, taskExecutorService) ->
+                if (executorService == taskExecutorService) {
+                    cancel(task)
+                }
+            }
+        } else {
+            UtilsBridge.e("ThreadUtils", "The executorService is not ThreadUtils's pool.")
+        }
+    }
+
+    /**
+     * Cancel task
+     * @param task the task to cancel
+     */
+    @JvmStatic
+    fun cancel(task: Task<*>) {
+        task.cancel()
+    }
+
+    /**
+     * Cancel tasks
+     * @param tasks the tasks to cancel
+     */
+    @JvmStatic
+    fun cancel(vararg tasks: Task<*>) {
+        if (tasks.isNullOrEmpty()) return
+
+        tasks.forEach { it.cancel() }
     }
 
     @Synchronized
@@ -50,6 +641,25 @@ object ThreadUtils {
         execute(pool, task, 0, 0, TimeUnit.MILLISECONDS)
     }
 
+    private fun <T> executeWithDelay(
+        pool: ExecutorService,
+        task: Task<T>,
+        delay: Long,
+        unit: TimeUnit
+    ) {
+        execute(pool, task, delay, 0, unit)
+    }
+
+    private fun <T> executeAtFixedRate(
+        pool: ExecutorService,
+        task: Task<T>,
+        delay: Long,
+        period: Long,
+        unit: TimeUnit
+    ) {
+        execute(pool, task, delay, period, unit)
+    }
+
     private fun <T> execute(
         pool: ExecutorService,
         task: Task<T>,
@@ -57,6 +667,15 @@ object ThreadUtils {
         period: Long,
         unit: TimeUnit
     ) {
+        synchronized(TASK_POOL_MAP) {
+            if (TASK_POOL_MAP[task] != null) {
+                UtilsBridge.e("ThreadUtils", "Task can only be executed once.")
+                return
+            }
+
+            TASK_POOL_MAP[task] = pool
+        }
+
         if (period == 0L) {
             if (delay == 0L) {
                 pool.execute(task)
@@ -70,16 +689,38 @@ object ThreadUtils {
             TIMER.scheduleAtFixedRate(timerTask, unit.toMillis(delay), unit.toMillis(period))
         }
     }
+
+    private fun getPool(type: Int, priority: Int = Thread.NORM_PRIORITY): ExecutorService {
+        synchronized(TYPE_PRIORITY_POOLS) {
+            var priorityPools = TYPE_PRIORITY_POOLS[type]
+
+            var pool: ExecutorService?
+            if (priorityPools == null) {
+                priorityPools = ConcurrentHashMap()
+                pool = createPool(type, priority)
+                priorityPools[priority] = pool
+                TYPE_PRIORITY_POOLS[type] = priorityPools
+            } else {
+                pool = priorityPools[priority]
+                if (pool == null) {
+                    pool = createPool(type, priority)
+                    priorityPools[priority] = pool
+                }
+            }
+
+            return pool
+        }
+    }
 }
 
 abstract class SimpleTask<T> : Task<T>() {
 
     override fun onCancel() {
-        UtilsBridge.e("onCancel: ${Thread.currentThread()}")
+        UtilsBridge.e("ThreadUtils", "onCancel: ${Thread.currentThread()}")
     }
 
     override fun onFail(t: Throwable) {
-        UtilsBridge.e("onFail: $t")
+        UtilsBridge.e("ThreadUtils", "onFail: $t")
     }
 }
 
@@ -128,7 +769,7 @@ abstract class Task<T> : Runnable {
                 if (!state.compareAndSet(NEW, RUNNING)) return
                 runner = Thread.currentThread()
                 if (timeoutListener != null) {
-                    UtilsBridge.w("Scheduled task doesn't support timeout.")
+                    UtilsBridge.w("ThreadUtils", "Scheduled task doesn't support timeout.")
                 }
             } else {
                 if (state.get() != RUNNING) return
@@ -141,6 +782,7 @@ abstract class Task<T> : Runnable {
                 checkNotNull(timer).schedule(timerTask {
                     if (!isDone && timeoutListener != null) {
                         timeout()
+                        timeoutListener?.onTimeout()
                     }
                 }, timeoutMillis)
             }

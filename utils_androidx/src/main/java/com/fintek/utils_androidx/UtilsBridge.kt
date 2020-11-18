@@ -35,8 +35,8 @@ internal object UtilsBridge {
     ///////////////////////////////////////////////////////////////////////////
     // Thread
     ///////////////////////////////////////////////////////////////////////////
-    fun <T> executeSingle(task: Task<T>): Task<T> {
-        ThreadUtils.executeBySingle(task)
+    fun <T> execute(task: Task<T>): Task<T> {
+        ThreadUtils.executeByCached(task)
         return task
     }
 

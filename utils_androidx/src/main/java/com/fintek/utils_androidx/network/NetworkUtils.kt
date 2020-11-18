@@ -4,10 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.icu.text.UFormat
 import android.net.ConnectivityManager
 import android.net.LinkProperties
-import android.net.MacAddress
 import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -309,7 +307,7 @@ object NetworkUtils {
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun getDnsAsync(
         consumer: FintekUtils.Consumer<String>
-    ) = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+    ) = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
         @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
         override fun doInBackground(): String {
             return getDns()
@@ -357,7 +355,7 @@ object NetworkUtils {
     fun getIPAddressAsync(
         useIPv4: Boolean,
         consumer: FintekUtils.Consumer<String>
-    ): Task<String> = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+    ): Task<String> = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
 
         @RequiresPermission(Manifest.permission.INTERNET)
         override fun doInBackground(): String {
@@ -454,7 +452,7 @@ object NetworkUtils {
     fun getDomainAsync(
         domain: String,
         consumer: FintekUtils.Consumer<String>
-    ): Task<String> = UtilsBridge.executeSingle(object : FintekUtils.Task<String>(consumer) {
+    ): Task<String> = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
         @RequiresPermission(Manifest.permission.INTERNET)
         override fun doInBackground(): String {
             return getDomainAddress(domain)

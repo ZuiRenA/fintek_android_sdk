@@ -5,11 +5,51 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
-internal fun createSinglePool(priority: Int) = ThreadPoolExecutor4Util(
+internal const val TYPE_SINGLE = -1
+internal const val TYPE_CACHE  = -2
+internal const val TYPE_IO     = -4
+internal const val TYPE_CPU    = -8
+
+internal val CPU_COUNT by lazy { Runtime.getRuntime().availableProcessors() }
+
+internal fun createPool(type: Int, priority: Int): ExecutorService = when(type) {
+    TYPE_SINGLE -> createSinglePool(priority)
+    TYPE_CACHE -> createCachePool(priority)
+    TYPE_IO -> createIOPool(priority)
+    TYPE_CPU -> createCPUPool(priority)
+    else -> createOtherPool(type, priority)
+}
+
+private fun createSinglePool(priority: Int) = ThreadPoolExecutor4Util(
     1, 1,
     0L, TimeUnit.MILLISECONDS,
     LinkedBlockingQueue4Util(), UtilsThreadFactory("single", priority = priority)
 )
+
+private fun createCachePool(priority: Int) = ThreadPoolExecutor4Util(
+    0, 128,
+    60L, TimeUnit.SECONDS,
+    LinkedBlockingQueue4Util(true), UtilsThreadFactory("cached", priority)
+)
+
+private fun createIOPool(priority: Int) = ThreadPoolExecutor4Util(
+    2 * CPU_COUNT + 1, 2 * CPU_COUNT + 1,
+    30, TimeUnit.SECONDS,
+    LinkedBlockingQueue4Util(), UtilsThreadFactory("io", priority)
+)
+
+private fun createCPUPool(priority: Int) = ThreadPoolExecutor4Util(
+    CPU_COUNT + 1, 2 * CPU_COUNT + 1,
+    30, TimeUnit.SECONDS,
+    LinkedBlockingQueue4Util(true), UtilsThreadFactory("cpu", priority)
+)
+
+private fun createOtherPool(type: Int, priority: Int) = ThreadPoolExecutor4Util(
+    type, type,
+    0, TimeUnit.SECONDS,
+    LinkedBlockingQueue4Util(), UtilsThreadFactory("fixed($type)", priority)
+)
+
 
 internal class ThreadPoolExecutor4Util(
     corePoolSize: Int,
