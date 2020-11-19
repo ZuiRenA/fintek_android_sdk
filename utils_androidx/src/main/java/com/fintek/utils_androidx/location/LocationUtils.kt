@@ -7,6 +7,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
+import android.provider.Settings
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
@@ -17,6 +18,35 @@ import com.fintek.utils_androidx.model.LocationData
 
 
 class LocationUtils : LocationListener, LifecycleObserver {
+
+    companion object {
+        /**
+         * Return whether to enable location service
+         */
+        @JvmStatic
+        fun isLocationServiceEnable(): Boolean {
+            val locationMode: Int
+            val locationProviders: String?
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                locationMode = try {
+                    Settings.Secure.getInt(FintekUtils.requiredContext.contentResolver, Settings.Secure.LOCATION_MODE)
+                } catch (e: Settings.SettingNotFoundException) {
+                    e.printStackTrace()
+                    return false
+                }
+
+                locationMode != Settings.Secure.LOCATION_MODE_OFF
+            } else {
+                locationProviders = Settings.Secure.getString(
+                    FintekUtils.requiredContext.contentResolver,
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED
+                )
+                !locationProviders.isNullOrEmpty()
+            }
+        }
+    }
+
+
     private val locationManager: LocationManager?
         get() = FintekUtils.requiredContext.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
 

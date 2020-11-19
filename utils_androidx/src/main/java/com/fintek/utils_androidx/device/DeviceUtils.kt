@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
@@ -218,30 +219,5 @@ object DeviceUtils {
             }
         }
         return false
-    }
-
-    /**
-     * Return whether to enable location service
-     */
-    @JvmStatic
-    fun isLocationServiceEnable(): Boolean {
-        val locationMode: Int
-        val locationProviders: String?
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            locationMode = try {
-                Settings.Secure.getInt(FintekUtils.requiredContext.contentResolver, Settings.Secure.LOCATION_MODE)
-            } catch (e: Settings.SettingNotFoundException) {
-                e.printStackTrace()
-                return false
-            }
-
-            locationMode != Settings.Secure.LOCATION_MODE_OFF
-        } else {
-            locationProviders = Settings.Secure.getString(
-                FintekUtils.requiredContext.contentResolver,
-                Settings.Secure.LOCATION_PROVIDERS_ALLOWED
-            )
-            !locationProviders.isNullOrEmpty()
-        }
     }
 }

@@ -12,6 +12,7 @@ import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.format.Formatter
+import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
@@ -53,6 +54,36 @@ object NetworkUtils {
     fun openWirelessSettings(flag: Int = Intent.FLAG_ACTIVITY_NEW_TASK) {
         FintekUtils.requiredContext.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS)
             .setFlags(flag))
+    }
+
+    /**
+     * Return userAgent
+     * @return userAgent
+     */
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    fun getUserAgent(): String {
+        val userAgent =
+            try {
+                WebSettings.getDefaultUserAgent(FintekUtils.requiredContext)
+            } catch (e: Exception) {
+                System.getProperty("http.agent")
+            }
+        val sb = StringBuffer()
+        if (!userAgent.isNullOrEmpty()) {
+            var i = 0
+            val length = userAgent.length
+            while (i < length) {
+                val c = userAgent[i]
+                if (c <= '\u001f' || c >= '\u007f') {
+                    sb.append(String.format("\\u%04x", c.toInt()))
+                } else {
+                    sb.append(c)
+                }
+                i++
+            }
+        }
+        return sb.toString()
     }
 
     /**

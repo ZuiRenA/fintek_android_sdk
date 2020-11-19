@@ -1,7 +1,8 @@
-package com.fintek.util_example
+package com.fintek.util
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.fintek.util_example.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
