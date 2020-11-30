@@ -45,6 +45,23 @@ object StorageUtils {
     fun getAvailableSize(): Long = getStorageInfo().second
 
 
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun getUsedSize(): Long = getTotalSize() - getAvailableSize()
+
+    /**
+     * Return totalSize - systemSize
+     * @return byte
+     */
+    @JvmStatic
+    fun getAdjustSize(): Long {
+        val path = Environment.getDataDirectory()
+        val stat = StatFs(path.path)
+        val blockSize = stat.blockSize.toLong()
+        val totalSize = stat.blockCount.toLong()
+        return  blockSize * totalSize
+    }
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun getStorageInfo(): Pair<Long, Long> {
         try {

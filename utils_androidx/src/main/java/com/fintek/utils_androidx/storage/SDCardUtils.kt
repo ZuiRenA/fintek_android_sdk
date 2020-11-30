@@ -36,6 +36,10 @@ object SDCardUtils {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun getAvailableSize(): Long = getDisk().first
 
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun getUsedSize(): Long = getTotalSize() - getAvailableSize()
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun getDisk(): Pair<Long, Long> {
         val sdCardInfo = getSDCardInfo()

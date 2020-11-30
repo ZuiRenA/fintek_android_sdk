@@ -15,14 +15,15 @@ import android.text.format.Formatter
 import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import androidx.annotation.WorkerThread
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.thread.Task
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.LineNumberReader
+import java.io.*
 import java.net.*
 import java.util.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 
 object NetworkUtils {
@@ -46,14 +47,18 @@ object NetworkUtils {
 
     private val NETWORK_CALLBACK_STACK = Stack<ConnectivityManager.NetworkCallback>()
 
+    private const val NETWORK_IP_DISABLE = "0.0.0.0"
+
     /**
      * Open the settings of wireless.
      */
     @JvmStatic
     @JvmOverloads
     fun openWirelessSettings(flag: Int = Intent.FLAG_ACTIVITY_NEW_TASK) {
-        FintekUtils.requiredContext.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS)
-            .setFlags(flag))
+        FintekUtils.requiredContext.startActivity(
+            Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                .setFlags(flag)
+        )
     }
 
     /**
@@ -292,7 +297,7 @@ object NetworkUtils {
         if (info != null && info.isAvailable) {
             when (info.type) {
                 ConnectivityManager.TYPE_WIFI -> return NetworkType.NETWORK_WIFI
-                ConnectivityManager.TYPE_MOBILE -> return when(info.subtype) {
+                ConnectivityManager.TYPE_MOBILE -> return when (info.subtype) {
                     TelephonyManager.NETWORK_TYPE_GSM, TelephonyManager.NETWORK_TYPE_GPRS,
                     TelephonyManager.NETWORK_TYPE_CDMA, TelephonyManager.NETWORK_TYPE_EDGE,
                     TelephonyManager.NETWORK_TYPE_1xRTT, TelephonyManager.NETWORK_TYPE_IDEN -> {
@@ -317,7 +322,8 @@ object NetworkUtils {
                         val subTypeName = info.subtypeName
                         if (subTypeName.equals("TD-SCDMA", true)
                             || subTypeName.equals("WCDMA", true)
-                            || subTypeName.equals("CDMA2000", true)) {
+                            || subTypeName.equals("CDMA2000", true)
+                        ) {
                             NetworkType.NETWORK_3G
                         } else {
                             NetworkType.NETWORK_UNKNOWN
@@ -690,6 +696,48 @@ object NetworkUtils {
         }
     }
 
+
+    /**
+     * Return wifiIp first, if wifiIp is empty return gprsIp
+     *
+     * @return ip address
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
+    fun getIpIgnorePublicIp(): String {
+        val wifiIp = getIpAddressByWifi()
+        val gprsIp = getGPRSIp()
+
+        return when {
+            wifiIp.isNotEmpty() && wifiIp.isNotBlank() -> wifiIp
+            gprsIp.isNotEmpty() && gprsIp.isNotBlank() -> gprsIp
+            else -> NETWORK_IP_DISABLE
+        }
+    }
+
+    /**
+     * Return publicIp first, if publicIp is empty return wifiIp, otherwise return gprsIp
+     */
+    @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
+    fun getIpWithPublicIp(consumer: FintekUtils.Consumer<String>) {
+        UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+            @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
+            override fun doInBackground(): String {
+                val publicIp = getPublicIp()
+                val wifiIp = getIpAddressByWifi()
+                val gprsIp = getGPRSIp()
+
+                return when {
+                    publicIp.isNotEmpty() && publicIp.isNotBlank() -> publicIp
+                    wifiIp.isNotEmpty() && wifiIp.isNotBlank() -> wifiIp
+                    gprsIp.isNotEmpty() && gprsIp.isNotBlank() -> gprsIp
+                    else -> NETWORK_IP_DISABLE
+                }
+            }
+        })
+    }
+
     /**
      * Return whether using ethernet.
      * @return true: yes
@@ -771,5 +819,82 @@ object NetworkUtils {
                 dnsServers.size
             )
         )
+    }
+
+    /**
+     * Return Public net ip，please don't used it in Ui Thread
+     */
+    @WorkerThread
+    private fun getPublicIp(): String {
+        var infoUrl: URL? = null
+        var inStream: InputStream? = null
+        var ipLine = ""
+        var httpConnection: HttpURLConnection? = null
+        try {
+            infoUrl = URL("http://pv.sohu.com/cityjson?ie=utf-8")
+            val connection = infoUrl.openConnection()
+            httpConnection = connection as HttpURLConnection
+            val responseCode = httpConnection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                inStream = httpConnection.inputStream
+                val reader = BufferedReader(
+                    InputStreamReader(inStream, "utf-8")
+                )
+                val sb = StringBuilder()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    sb.append(
+                        """
+                    $line
+                    
+                    """.trimIndent()
+                    )
+                }
+                val pattern: Pattern = Pattern
+                    .compile("((?:(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d))))")
+                val matcher: Matcher = pattern.matcher(sb.toString())
+                if (matcher.find()) {
+                    ipLine = matcher.group()
+                }
+            }
+        } catch (e: MalformedURLException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                inStream?.close()
+                httpConnection?.disconnect()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } catch (ex: java.lang.Exception) {
+                ex.printStackTrace()
+            }
+        }
+
+        return ipLine
+    }
+
+    /**
+     * Return Intranet ip
+     */
+    private fun getGPRSIp(): String {
+        try {
+            val en = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val networkInterface = en.nextElement()
+                val addresses =
+                    networkInterface.inetAddresses
+                while (addresses.hasMoreElements()) {
+                    val inetAddress = addresses.nextElement()
+                    if (!inetAddress.isLoopbackAddress) {
+                        return inetAddress.hostAddress.toString()
+                    }
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+        return ""
     }
 }
