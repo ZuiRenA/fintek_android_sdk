@@ -179,7 +179,11 @@ class LocationUtils : LocationListener, LifecycleObserver {
                 locationData?.locationType = LocationData.NATIVE_NULL
             }
 
-            locationManager?.requestLocationUpdates(providerType, 100L, 0f, this)
+            try {
+                locationManager?.requestLocationUpdates(providerType,  100L, 0f, this)
+            } catch (e: Exception) {
+                // ignore this
+            }
         }
     }
 }

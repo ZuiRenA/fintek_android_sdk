@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:68064102208:android:ec576d8b26f9b5c5681ca5",
         "android_client_info": {
-          "package_name": "com.fintek.supermarket"
+          "package_name": "com.fintek.utils_example"
         }
       },
       "oauth_client": [

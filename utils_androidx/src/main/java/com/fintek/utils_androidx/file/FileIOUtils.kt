@@ -38,6 +38,7 @@ object FileIOUtils {
      * @param append  True to append, false otherwise.
      * @return `true`: success<br></br>`false`: fail
      */
+    @JvmStatic
     fun writeFileFromString(
         file: File?,
         content: String?,

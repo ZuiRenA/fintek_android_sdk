@@ -11,6 +11,7 @@ object ThrowableUtils {
 
     private val LINE_SEP = System.getProperty("line.separator")
 
+    @JvmStatic
     fun getFullStackTrace(throwable: Throwable?): String {
         var throwableShadow = throwable
         val throwableList: MutableList<Throwable> = ArrayList()

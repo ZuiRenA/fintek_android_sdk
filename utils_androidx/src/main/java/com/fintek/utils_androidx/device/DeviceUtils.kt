@@ -106,6 +106,7 @@ object DeviceUtils {
      *
      * @return the custom IMEI(International Mobile Equipment Identity)
      */
+    @JvmStatic
     fun getUniquePseudoId(): String {
         val szDevIdShort = "35" + Build.BOARD.length % 10 + Build.BRAND.length % 10 + Build.CPU_ABI.length % 10 +
                 Build.DEVICE.length % 10 + Build.DISPLAY.length % 10 + Build.HOST.length % 10 +

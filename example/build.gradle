@@ -10,7 +10,7 @@ android {
     buildToolsVersion "30.0.0"
 
     defaultConfig {
-        applicationId "com.fintek.supermarket"
+        applicationId "com.fintek.utils_example"
         minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
@@ -25,6 +25,44 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    signingConfigs {
+        debug {
+            storeFile file('../kotaemas.jks')
+            storePassword "kotaemas"
+            keyAlias "kotaemas"
+            keyPassword "kotaemas"
+        }
+
+        release {
+            storeFile file('../kotaemas.jks')
+            storePassword "kotaemas"
+            keyAlias "kotaemas"
+            keyPassword "kotaemas"
+        }
+    }
+
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+            debuggable true
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            zipAlignEnabled true
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -47,4 +85,5 @@ dependencies {
 
     implementation project(path: ":utils_android")
     implementation project(path: ":utils_androidx")
+    implementation 'com.google.code.gson:gson:2.8.6'
 }

@@ -12,6 +12,7 @@ object AppUtils {
      *
      * @return the application's version name
      */
+    @JvmStatic
     fun getAppVersionName(): String {
         return getAppVersionName(FintekUtils.requiredContext.packageName)
     }
@@ -22,6 +23,7 @@ object AppUtils {
      * @param packageName The name of the package.
      * @return the application's version name
      */
+    @JvmStatic
     fun getAppVersionName(packageName: String?): String {
         return if (packageName.isNullOrBlank()) "" else try {
             val pm: PackageManager = FintekUtils.requiredContext.packageManager
@@ -38,6 +40,7 @@ object AppUtils {
      *
      * @return the application's version code
      */
+    @JvmStatic
     fun getAppVersionCode(): Int {
         return getAppVersionCode(FintekUtils.requiredContext.packageName)
     }
@@ -48,6 +51,7 @@ object AppUtils {
      * @param packageName The name of the package.
      * @return the application's version code
      */
+    @JvmStatic
     fun getAppVersionCode(packageName: String?): Int {
         return if (packageName.isNullOrBlank()) -1 else try {
             val pm: PackageManager = FintekUtils.requiredContext.packageManager

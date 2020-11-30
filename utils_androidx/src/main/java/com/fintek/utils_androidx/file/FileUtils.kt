@@ -14,6 +14,7 @@ object FileUtils {
      * @param file The file.
      * @return `true`: exists or creates successfully<br></br>`false`: otherwise
      */
+    @JvmStatic
     fun createOrExistsDir(file: File?): Boolean {
         return file != null && if (file.exists()) file.isDirectory else file.mkdirs()
     }
@@ -25,6 +26,7 @@ object FileUtils {
      * @param filePath The path of file.
      * @return the file
      */
+    @JvmStatic
     fun getFileByPath(filePath: String?): File? {
         return if (filePath.isNullOrBlank()) null else File(filePath)
     }
@@ -35,6 +37,7 @@ object FileUtils {
      * @param file The file.
      * @return `true`: exists or creates successfully<br></br>`false`: otherwise
      */
+    @JvmStatic
     fun createOrExistsFile(file: File?): Boolean {
         if (file == null) return false
         if (file.exists()) return file.isFile

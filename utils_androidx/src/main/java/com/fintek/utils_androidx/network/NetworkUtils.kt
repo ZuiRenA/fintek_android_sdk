@@ -27,15 +27,15 @@ import java.util.*
 
 object NetworkUtils {
 
-    enum class NetworkType {
-        NETWORK_ETHERNET,
-        NETWORK_WIFI,
-        NETWORK_5G,
-        NETWORK_4G,
-        NETWORK_3G,
-        NETWORK_2G,
-        NETWORK_UNKNOWN,
-        NETWORK_NO
+    enum class NetworkType(val flag: Int) {
+        NETWORK_ETHERNET(0),
+        NETWORK_WIFI(1),
+        NETWORK_5G(2),
+        NETWORK_4G(3),
+        NETWORK_3G(4),
+        NETWORK_2G(5),
+        NETWORK_UNKNOWN(6),
+        NETWORK_NO(7)
     }
 
     private val connectivityManager: ConnectivityManager?

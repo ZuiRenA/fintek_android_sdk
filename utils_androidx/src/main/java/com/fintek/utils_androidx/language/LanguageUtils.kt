@@ -14,7 +14,7 @@ object LanguageUtils {
      * @return [Locale] used
      */
     @JvmStatic
-    fun getCurrentLocale(): Locale? = FintekUtils.requiredContext.resources.configuration.locale
+    fun getCurrentLocale(): Locale = FintekUtils.requiredContext.resources.configuration.locale
 
     /**
      * Return locale iso3language
