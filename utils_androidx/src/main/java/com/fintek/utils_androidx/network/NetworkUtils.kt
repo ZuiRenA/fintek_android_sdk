@@ -344,7 +344,7 @@ object NetworkUtils {
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun getDnsAsync(
         consumer: FintekUtils.Consumer<String>
-    ) = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+    ) = UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
         @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
         override fun doInBackground(): String {
             return getDns()
@@ -392,7 +392,7 @@ object NetworkUtils {
     fun getIPAddressAsync(
         useIPv4: Boolean,
         consumer: FintekUtils.Consumer<String>
-    ): Task<String> = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+    ): Task<String> = UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
 
         @RequiresPermission(Manifest.permission.INTERNET)
         override fun doInBackground(): String {
@@ -489,7 +489,7 @@ object NetworkUtils {
     fun getDomainAsync(
         domain: String,
         consumer: FintekUtils.Consumer<String>
-    ): Task<String> = UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+    ): Task<String> = UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
         @RequiresPermission(Manifest.permission.INTERNET)
         override fun doInBackground(): String {
             return getDomainAddress(domain)
@@ -721,7 +721,7 @@ object NetworkUtils {
     @JvmStatic
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
     fun getIpWithPublicIp(consumer: FintekUtils.Consumer<String>) {
-        UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+        UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
             override fun doInBackground(): String {
                 val publicIp = getPublicIp()

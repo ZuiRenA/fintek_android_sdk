@@ -35,8 +35,29 @@ internal object UtilsBridge {
     ///////////////////////////////////////////////////////////////////////////
     // Thread
     ///////////////////////////////////////////////////////////////////////////
-    fun <T> execute(task: Task<T>): Task<T> {
-        ThreadUtils.executeByCached(task)
+
+    fun <T> executeBySingle(task: Task<T>, priority: Int = Thread.NORM_PRIORITY): Task<T> {
+        ThreadUtils.executeBySingle(task, priority)
+        return task
+    }
+
+    fun <T> executeByCached(task: Task<T>, priority: Int = Thread.NORM_PRIORITY): Task<T> {
+        ThreadUtils.executeByCached(task, priority)
+        return task
+    }
+
+    fun <T> executeByIO(task: Task<T>, priority: Int = Thread.NORM_PRIORITY): Task<T> {
+        ThreadUtils.executeByIo(task, priority)
+        return task
+    }
+
+    fun <T> executeByCPU(task: Task<T>, priority: Int = Thread.NORM_PRIORITY): Task<T> {
+        ThreadUtils.executeByCpu(task, priority)
+        return task
+    }
+
+    fun <T> executeByCustom(task: Task<T>, size: Int ,priority: Int = Thread.NORM_PRIORITY): Task<T> {
+        ThreadUtils.executeByCustom(ThreadUtils.getFixedPool(size, priority), task)
         return task
     }
 
@@ -126,6 +147,16 @@ internal object UtilsBridge {
     fun a(vararg contents: Any?) {
         if (FintekUtils.isDebugEnable) {
             TimberUtil.aTag(tag = FintekUtils.TAG, contents = contents)
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Check
+    ///////////////////////////////////////////////////////////////////////////
+    fun checkOffsetAndCount(arrayLength: Long, offset: Long, count: Long) {
+        if (offset or count < 0L || offset > arrayLength || arrayLength - offset < count) {
+            throw ArrayIndexOutOfBoundsException()
         }
     }
 }

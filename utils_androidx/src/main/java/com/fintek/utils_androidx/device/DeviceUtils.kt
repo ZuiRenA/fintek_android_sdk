@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
-import android.webkit.WebSettings
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
@@ -141,7 +140,7 @@ object DeviceUtils {
      */
     @JvmStatic
     fun getGaid(consumer: FintekUtils.Consumer<String>) {
-        UtilsBridge.execute(object : FintekUtils.Task<String>(consumer) {
+        UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             override fun doInBackground(): String {
                 return AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
             }

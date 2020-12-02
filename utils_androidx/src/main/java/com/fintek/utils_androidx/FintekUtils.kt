@@ -30,6 +30,8 @@ object FintekUtils {
     /* Utils global context */
     private var context: Context? = null
 
+    @Volatile private var identify: Any? = null
+
     /* debug tag */
     internal const val TAG = "FintekUtils"
 
@@ -53,6 +55,19 @@ object FintekUtils {
         this.context = context
     }
 
+    @JvmStatic
+    fun <T> setIdentify(abstractIdentify: AbstractIdentify<T>) {
+        identify = abstractIdentify.invoke()
+    }
+
+    @JvmStatic
+    fun <T> setIdentifyAsync(abstractIdentify: AbstractIdentify<T>) {
+        UtilsBridge.executeByCached(object : FintekUtils.Task<T>(abstractIdentify) {
+            override fun doInBackground(): T {
+                return abstractIdentify.invoke()
+            }
+        })
+    }
 
     @RequiresPermission(anyOf = [
         Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
@@ -180,5 +195,14 @@ object FintekUtils {
 
     interface Consumer<T> {
         fun accept(t: T)
+    }
+
+    abstract class AbstractIdentify<T> : Consumer<T> {
+
+        abstract fun invoke(): T
+
+        override fun accept(t: T) {
+            identify = t
+        }
     }
 }
