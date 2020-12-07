@@ -24,14 +24,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Utils">
         <activity android:name="com.fintek.util.MainJavaActivity">
+
+        </activity>
+        <activity android:name="com.fintek.util.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name="com.fintek.util.MainActivity">
-
         </activity>
     </application>
 

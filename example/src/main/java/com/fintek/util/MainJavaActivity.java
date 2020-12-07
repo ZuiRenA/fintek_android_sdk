@@ -6,12 +6,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fintek.model.AppConfigReq;
-import com.fintek.model.BaseResponse;
 import com.fintek.util_example.R;
 import com.fintek.utils_androidx.FintekUtils;
 import com.fintek.utils_androidx.location.LocationUtils;
 import com.fintek.utils_androidx.log.Timber;
 import com.fintek.utils_androidx.log.TimberUtil;
+import com.fintek.utils_androidx.model.BaseResponse;
 import com.fintek.utils_androidx.model.CoronetResponse;
 import com.fintek.utils_androidx.network.CoronetRequest;
 import com.fintek.utils_androidx.network.Dispatchers;
@@ -21,9 +21,11 @@ import com.fintek.utils_androidx.network.RequestBody;
 import com.fintek.utils_androidx.network.RequestTask;
 import com.fintek.utils_androidx.thread.ThreadUtils;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import kotlin.Unit;
@@ -39,6 +41,7 @@ public class MainJavaActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_java);
+        locationUtils.registerLocationListener();
 
         CoronetRequest request = new CoronetRequest.Builder()
                 .setBaseUrl("https://loanmarket.fastloan.id/")
@@ -60,15 +63,21 @@ public class MainJavaActivity extends AppCompatActivity {
                 MediaType.toMediaType("application/json; charset=utf-8")
         );
 
-        RequestTask<BaseResponse<String>> task = request.call(new Request.Builder()
+        RequestTask<BaseResponse<Map<String, String>>> task = request.call(new Request.Builder()
                 .url("/api/common/get-app-config")
-                .post(requestBody).build());
+                .post(requestBody).build(), new TypeToken<BaseResponse<Map<String, String>>>(){});
 
-        task.onNext(TimberUtil::e)
+        task.onNext(data -> TimberUtil.e(
+                data, data.getData().get("alert_flag"), data.getData().get("alert_content")
+        ))
                 .onError(TimberUtil::e)
-                .onCancel(unit -> {
-                    TimberUtil.v("cancel");
-                })
+                .onCancel(unit -> TimberUtil.v("cancel"))
                 .execute(Dispatchers.CPU);
+
+        TimberUtil.e(
+                locationUtils.getLocationData(),
+                locationUtils.getLocationData().getLocation().getLatitude(),
+                locationUtils.getLocationData().getLocation().getLongitude()
+        );
     }
 }

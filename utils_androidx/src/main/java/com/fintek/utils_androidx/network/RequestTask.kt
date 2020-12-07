@@ -2,11 +2,7 @@ package com.fintek.utils_androidx.network
 
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
-import com.fintek.utils_androidx.thread.*
-import com.fintek.utils_androidx.thread.TYPE_CACHE
-import com.fintek.utils_androidx.thread.TYPE_CPU
-import com.fintek.utils_androidx.thread.TYPE_IO
-import com.fintek.utils_androidx.thread.TYPE_SINGLE
+import com.fintek.utils_androidx.thread.SimpleTask
 
 class RequestTask<T>(
     private val doInBackground: () -> T
@@ -17,12 +13,11 @@ class RequestTask<T>(
     private var onCancel: FintekUtils.Consumer<Unit>? = null
 
     fun execute(dispatcher: Dispatchers) {
-        when(dispatcher.type) {
-            TYPE_SINGLE -> UtilsBridge.executeBySingle(this)
-            TYPE_CACHE -> UtilsBridge.executeByCached(this)
-            TYPE_IO -> UtilsBridge.executeByIO(this)
-            TYPE_CPU -> UtilsBridge.executeByCPU(this)
-            else -> UtilsBridge.executeByCustom(this, dispatcher.type)
+        when(dispatcher) {
+            Dispatchers.SINGLE -> UtilsBridge.executeBySingle(this)
+            Dispatchers.CACHE -> UtilsBridge.executeByCached(this)
+            Dispatchers.IO -> UtilsBridge.executeByIO(this)
+            Dispatchers.CPU -> UtilsBridge.executeByCPU(this)
         }
     }
 

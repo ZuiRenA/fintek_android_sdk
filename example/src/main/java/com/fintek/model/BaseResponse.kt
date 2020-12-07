@@ -3,12 +3,6 @@ package com.fintek.model
 /**
  * Created by ChaoShen on 2020/12/2
  */
-data class BaseResponse<T> (
-    val code: String? = null,
-    val message: String? = null,
-    val time: String? = null,
-    val data: T? = null
-)
 
 data class AppConfigReq(
     /**

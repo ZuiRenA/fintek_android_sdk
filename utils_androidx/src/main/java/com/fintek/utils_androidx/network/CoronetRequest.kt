@@ -1,8 +1,9 @@
 package com.fintek.utils_androidx.network
 
-import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.model.CoronetResponse
+import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.model.BaseResponse
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -20,11 +21,14 @@ class CoronetRequest {
     private var connectTimeout: Long = 60000 //default millisecond
     private var readTimeout: Long = 60000 //default millisecond
 
-    fun <T> call(request: Request) : RequestTask<T> = RequestTask {
-        call(request.url) {
+    fun <T> call(request: Request, typeToken: TypeToken<T>) : RequestTask<T> = RequestTask {
+        val resultStr: String = call(request.url) {
             requestMethod = request.method
-            doInput = true
-            doOutput = true
+            if (requestMethod == "POST") {
+                doInput = true
+                doOutput = true
+                useCaches = false
+            }
             connectTimeout = this@CoronetRequest.connectTimeout.toInt()
             readTimeout = this@CoronetRequest.readTimeout.toInt()
             headers?.forEach { (key, value) ->
@@ -39,23 +43,21 @@ class CoronetRequest {
 
             request.body?.writeTo(outputStream)
         }
+
+        GsonBuilder().enableComplexMapKeySerialization()
+            .create()
+            .fromJson(resultStr, typeToken.type)
     }
 
-    private fun <T> call(url: String, init: HttpURLConnection.() -> Unit): T {
+    private fun call(url: String, init: HttpURLConnection.() -> Unit): String {
         val urlInternal = URL(baseUrl + url)
         with(urlInternal.openConnection() as HttpURLConnection) {
             init()
 
-            if (requestMethod == "POST") {
-                doOutput = true
-                doInput = true
-                useCaches = false
-            }
 
             try {
                 BufferedReader(InputStreamReader(inputStream)).use {
-                    val t = it.readText()
-                    return Gson().fromJson(t, object : TypeToken<T>() {}.type)
+                    return it.readText()
                 }
             } catch (e: Exception) {
                 throw e
@@ -95,4 +97,5 @@ class CoronetRequest {
             }
         }
     }
+
 }

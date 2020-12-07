@@ -124,7 +124,7 @@ class LocationUtils : LocationListener, LifecycleObserver {
      *
      * get location data, please used between [registerLocationListener] and [unregisterLocationListener]
      *
-     * @return if will null!!
+     * @return it will null!!
      */
     fun getLocationData(): LocationData? = locationData
 
