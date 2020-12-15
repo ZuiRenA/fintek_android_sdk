@@ -30,7 +30,11 @@ object FintekUtils {
     /* Utils global context */
     private var context: Context? = null
 
+    /* Utils global identify, used in upload with network */
     @Volatile private var identify: Any? = null
+
+    /* Utils global network base url */
+    private var baseUrl: String? = null
 
     /* debug tag */
     internal const val TAG = "FintekUtils"
@@ -46,22 +50,49 @@ object FintekUtils {
         "Please use FintekUtils.init(Context context) first"
     }
 
+
+    /**
+     * Utils used baseUrl
+     * @see setBaseUrl
+     */
+    internal val requiredBaseUrl: String get() = checkNotNull(baseUrl) {
+        "Please use FintekUtils.setBaseUrl(String baseUrl) first"
+    }
+
+    /**
+     * Utils used identify
+     * @see setIdentify
+     * @see setIdentifyAsync
+     */
+    internal val requiredIdentify: Any get() = checkNotNull(identify) {
+        "Please use FintekUtils.setIdentify(AbstractIdentify abstractIdentify) first"
+    }
+
     /**
      * init by context
      * @param context please use [android.app.Application] context
      */
     @JvmStatic
-    fun init(context: Context) {
+    fun init(context: Context) = apply {
         this.context = context
     }
 
+    /**
+     * set base url
+     * @param baseUrl utils upload struct url
+     */
     @JvmStatic
-    fun <T> setIdentify(abstractIdentify: AbstractIdentify<T>) {
+    fun setBaseUrl(baseUrl: String) = apply {
+        this.baseUrl = baseUrl
+    }
+
+    @JvmStatic
+    fun <T> setIdentify(abstractIdentify: AbstractIdentify<T>) = apply {
         identify = abstractIdentify.invoke()
     }
 
     @JvmStatic
-    fun <T> setIdentifyAsync(abstractIdentify: AbstractIdentify<T>) {
+    fun <T> setIdentifyAsync(abstractIdentify: AbstractIdentify<T>) = apply {
         UtilsBridge.executeByCached(object : FintekUtils.Task<T>(abstractIdentify) {
             override fun doInBackground(): T {
                 return abstractIdentify.invoke()

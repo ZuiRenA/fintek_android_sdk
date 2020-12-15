@@ -3,6 +3,7 @@ package com.fintek.utils_androidx.network
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.thread.SimpleTask
+import com.fintek.utils_androidx.thread.Task
 
 class RequestTask<T>(
     private val doInBackground: () -> T
@@ -13,12 +14,7 @@ class RequestTask<T>(
     private var onCancel: FintekUtils.Consumer<Unit>? = null
 
     fun execute(dispatcher: Dispatchers) {
-        when(dispatcher) {
-            Dispatchers.SINGLE -> UtilsBridge.executeBySingle(this)
-            Dispatchers.CACHE -> UtilsBridge.executeByCached(this)
-            Dispatchers.IO -> UtilsBridge.executeByIO(this)
-            Dispatchers.CPU -> UtilsBridge.executeByCPU(this)
-        }
+        dispatcher.dispatch(this)
     }
 
     fun onNext(consumer: FintekUtils.Consumer<T>) = apply {
@@ -49,8 +45,29 @@ class RequestTask<T>(
 }
 
 enum class Dispatchers(internal val type: Int) {
-    SINGLE(-1),
-    CACHE(-2),
-    IO(-4),
-    CPU(-5),
+    SINGLE(-1) {
+        override fun dispatch(task: Task<*>) {
+            UtilsBridge.executeBySingle(task)
+        }
+    },
+
+    CACHE(-2) {
+        override fun dispatch(task: Task<*>) {
+            UtilsBridge.executeByCached(task)
+        }
+    },
+
+    IO(-4) {
+        override fun dispatch(task: Task<*>) {
+            UtilsBridge.executeByIO(task)
+        }
+    },
+
+    CPU(-5) {
+        override fun dispatch(task: Task<*>) {
+            UtilsBridge.executeByCPU(task)
+        }
+    };
+
+    abstract fun dispatch(task: Task<*>)
 }

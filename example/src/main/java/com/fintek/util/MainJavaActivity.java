@@ -35,13 +35,10 @@ import kotlin.Unit;
  */
 public class MainJavaActivity extends AppCompatActivity {
 
-    private LocationUtils locationUtils = new LocationUtils();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_java);
-        locationUtils.registerLocationListener();
 
         CoronetRequest request = new CoronetRequest.Builder()
                 .setBaseUrl("https://loanmarket.fastloan.id/")
@@ -73,11 +70,5 @@ public class MainJavaActivity extends AppCompatActivity {
                 .onError(TimberUtil::e)
                 .onCancel(unit -> TimberUtil.v("cancel"))
                 .execute(Dispatchers.CPU);
-
-        TimberUtil.e(
-                locationUtils.getLocationData(),
-                locationUtils.getLocationData().getLocation().getLatitude(),
-                locationUtils.getLocationData().getLocation().getLongitude()
-        );
     }
 }

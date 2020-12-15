@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.model.LocationData
 
 
@@ -93,6 +94,7 @@ class LocationUtils : LocationListener, LifecycleObserver {
     @Throws(IllegalArgumentException::class, RuntimeException::class, SecurityException::class)
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun registerLocationListener() {
+        UtilsBridge.v("registerLocationListener")
         locationData = LocationData()
         locationData?.locationType = LocationData.INIT
         initLocationService()
@@ -105,6 +107,7 @@ class LocationUtils : LocationListener, LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun unregisterLocationListener() {
+        UtilsBridge.v("unregisterLocationListener")
         if (Build.VERSION.SDK_INT >= 23
             && ActivityCompat.checkSelfPermission(FintekUtils.requiredContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(FintekUtils.requiredContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

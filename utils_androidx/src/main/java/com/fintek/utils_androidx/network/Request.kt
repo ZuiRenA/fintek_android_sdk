@@ -99,7 +99,7 @@ class Request internal constructor(
                 else -> url
             }
 
-            this.url = url
+            this.url = finalUrl
         }
 
         /**

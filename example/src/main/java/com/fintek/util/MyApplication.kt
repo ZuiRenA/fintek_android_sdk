@@ -14,6 +14,10 @@ class MyApplication : Application() {
         super.onCreate()
 
         FintekUtils.init(this)
+            .setBaseUrl("")
+            .setIdentify(object : FintekUtils.AbstractIdentify<String>() {
+                override fun invoke(): String = ""
+            })
     }
 
     companion object {
