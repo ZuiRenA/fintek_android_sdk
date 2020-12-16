@@ -132,7 +132,6 @@ internal class StringElement(
         val removedElement: String
         val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
         save(internalList)
-        removeCache()
         return removedElement
     }
 
@@ -166,7 +165,11 @@ internal class StringElement(
         return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
     }
 
-    override fun removeCache(): Boolean = CACHE?.delete() ?: false
+    override fun removeCache(): Boolean {
+        if (CACHE == null) return false
+        remove()
+        return CACHE?.delete() ?: false
+    }
 
     private fun write(content: String) {
         val headerFile = File(PARENT, "/header")
@@ -232,7 +235,6 @@ internal class ExistedStringElement : Element<String>() {
         val removedElement: String
         val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
         save(internalList)
-        removeCache()
         return removedElement
     }
 
@@ -262,5 +264,9 @@ internal class ExistedStringElement : Element<String>() {
         return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
     }
 
-    override fun removeCache(): Boolean = CACHE?.delete() ?: false
+    override fun removeCache(): Boolean {
+        if (CACHE == null) return false
+        remove()
+        return CACHE?.delete() ?: false
+    }
 }
