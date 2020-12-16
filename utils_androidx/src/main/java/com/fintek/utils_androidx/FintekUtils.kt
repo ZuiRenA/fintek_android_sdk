@@ -36,6 +36,9 @@ object FintekUtils {
     /* Utils global network base url */
     private var baseUrl: String? = null
 
+    /* Utils global upload path url */
+    private var uploadApiPath: String? = null
+
     /* debug tag */
     internal const val TAG = "FintekUtils"
 
@@ -57,6 +60,14 @@ object FintekUtils {
      */
     internal val requiredBaseUrl: String get() = checkNotNull(baseUrl) {
         "Please use FintekUtils.setBaseUrl(String baseUrl) first"
+    }
+
+    /**
+     * Utils used baseUrl
+     * @see setUploadApiPath
+     */
+    internal val requiredUploadApiPath: String get() = checkNotNull(uploadApiPath) {
+        "Please use FintekUtils.setUploadApiPath(String urlPath) first"
     }
 
     /**
@@ -84,6 +95,15 @@ object FintekUtils {
     @JvmStatic
     fun setBaseUrl(baseUrl: String) = apply {
         this.baseUrl = baseUrl
+    }
+
+    /**
+     * set upload path url
+     * @param urlPath
+     */
+    @JvmStatic
+    fun setUploadApiPath(urlPath: String) = apply {
+        this.uploadApiPath = urlPath
     }
 
     @JvmStatic

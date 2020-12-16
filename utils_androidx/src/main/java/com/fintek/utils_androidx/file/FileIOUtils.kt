@@ -2,10 +2,8 @@ package com.fintek.utils_androidx.file
 
 import android.util.Log
 import com.fintek.utils_androidx.UtilsBridge
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
+import java.io.*
+import java.nio.charset.Charset
 
 /**
  * Created by ChaoShen on 2020/11/12
@@ -25,9 +23,10 @@ object FileIOUtils {
     fun writeFileFromString(
         filePath: String?,
         content: String?,
-        append: Boolean = false
+        append: Boolean = false,
+        charset: Charset = Charsets.UTF_8
     ): Boolean {
-        return writeFileFromString(UtilsBridge.getFileByPath(filePath), content, append)
+        return writeFileFromString(UtilsBridge.getFileByPath(filePath), content, append, charset)
     }
 
     /**
@@ -38,11 +37,13 @@ object FileIOUtils {
      * @param append  True to append, false otherwise.
      * @return `true`: success<br></br>`false`: fail
      */
+    @JvmOverloads
     @JvmStatic
     fun writeFileFromString(
         file: File?,
         content: String?,
-        append: Boolean
+        append: Boolean,
+        charset: Charset = Charsets.UTF_8
     ): Boolean {
         if (file == null || content == null) return false
         if (!UtilsBridge.createOrExistsFile(file)) {
@@ -51,7 +52,7 @@ object FileIOUtils {
         }
         var bw: BufferedWriter? = null
         return try {
-            bw = BufferedWriter(FileWriter(file, append))
+            bw = BufferedWriter(OutputStreamWriter(FileOutputStream(file, append), charset))
             bw.write(content)
             true
         } catch (e: IOException) {

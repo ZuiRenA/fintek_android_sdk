@@ -20,7 +20,7 @@ private val PARENT: File? get() {
 }
 
 internal val HEADER: File? get() {
-    val file = File(PARENT, "/header.txt")
+    val file = File(PARENT, "/header")
     if (!file.exists()) {
         return null
     }
@@ -28,7 +28,15 @@ internal val HEADER: File? get() {
 }
 
 internal val CONTENT: File? get() {
-    val file = File(PARENT, "/content.txt")
+    val file = File(PARENT, "/content")
+    if (!file.exists()) {
+        return null
+    }
+    return file
+}
+
+internal val CACHE: File? get() {
+    val file = File(PARENT, "/cache")
     if (!file.exists()) {
         return null
     }
@@ -43,6 +51,20 @@ internal val IS_EXISTED: Boolean get() {
     return true
 }
 
+internal val IS_UPLOADING: Boolean get() {
+    if (HEADER == null && CACHE == null) return false
+    val headerList: List<String>? = HEADER?.readLines()
+    val cacheList: List<String>? = CACHE?.readLines()
+    if (headerList.isNullOrEmpty() || cacheList.isNullOrEmpty()) return false
+    return true
+}
+
+internal fun elementDelete() {
+    HEADER?.delete()
+    CONTENT?.delete()
+    CACHE?.delete()
+}
+
 private val gson = Gson()
 
 internal data class Header(
@@ -50,7 +72,7 @@ internal data class Header(
     val part: Int,
 )
 
-class StringElement(
+internal class StringElement(
     rsa: String,
     limit: Int = 100 * 1024, // 100kb, Base unit is byte
 ) : Element<String>() {
@@ -66,8 +88,18 @@ class StringElement(
         val buffer = ByteArray(limit)
         val sb = StringBuilder()
         while (bis.read(buffer).also { i = it } > 0) {
-            for (b in buffer) {
-                sb.append(b.toChar())
+            try {
+                var endIndex = 0
+                // filter the first 0 in the buffer
+                for (j in buffer.indices) {
+                    if (buffer[j] == 0.toByte()) {
+                        endIndex = j
+                        break
+                    }
+                }
+                sb.append(buffer.decodeToString(0, endIndex))
+            } catch (e: Exception) {
+                // ignore this, it's only catch convert to string error
             }
             Arrays.fill(buffer, 0.toByte())
             buffer.fill(0.toByte())
@@ -90,15 +122,23 @@ class StringElement(
         }
 
         partIndex.getAndIncrement()
-        val internalList = getAsList().toMutableList()
-        val first: String = internalList.removeFirst()
+        val internalList = getAsList()
+        val firstElement = internalList.first()
+        saveCache(firstElement)
+        return firstElement
+    }
+
+    override fun remove(): String {
+        val removedElement: String
+        val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
         save(internalList)
-        return first
+        removeCache()
+        return removedElement
     }
 
     override fun save(element: List<String>) {
-        val headerFile = HEADER ?: File(PARENT, "/header.txt")
-        val contentFile = CONTENT ?: File(PARENT, "/content.txt")
+        val headerFile = HEADER ?: File(PARENT, "/header")
+        val contentFile = CONTENT ?: File(PARENT, "/content")
 
         val header = Header(total = total.get(), part = partIndex.get())
         UtilsBridge.writeFileFromString(headerFile.path, gson.toJson(header), false)
@@ -110,11 +150,26 @@ class StringElement(
                 sb.append("\n")
             }
         }
-        UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+        // if StringBuilder is Empty, need delete it
+        if (sb.isEmpty()) {
+            headerFile.delete()
+            contentFile.delete()
+        } else {
+            UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+        }
     }
 
+    override fun cache(): String? = CACHE?.readText()
+
+    override fun saveCache(element: String): Boolean {
+        val cacheFile = CACHE ?: File(PARENT, "/cache")
+        return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
+    }
+
+    override fun removeCache(): Boolean = CACHE?.delete() ?: false
+
     private fun write(content: String) {
-        val headerFile = File(PARENT, "/header.txt")
+        val headerFile = File(PARENT, "/header")
         val headerParentExist = headerFile.parentFile?.exists() ?: false
         if (!headerParentExist) {
             headerFile.parentFile?.mkdirs()
@@ -122,7 +177,7 @@ class StringElement(
         val header = Header(total = total.get(), part = partIndex.get())
         UtilsBridge.writeFileFromString(headerFile.path, gson.toJson(header), false)
 
-        val contentFile = File(PARENT, "/content.txt")
+        val contentFile = File(PARENT, "/content")
         val contentParentExist = contentFile.parentFile?.exists() ?: false
         if (!contentParentExist) {
             contentFile.parentFile?.mkdirs()
@@ -131,10 +186,7 @@ class StringElement(
     }
 }
 
-/**
- * Please check
- */
-class ExistedStringElement : Element<String>() {
+internal class ExistedStringElement : Element<String>() {
     override val total: AtomicInteger
     override val partIndex: AtomicInteger
     private val headerFile: File = checkNotNull(HEADER)
@@ -170,10 +222,18 @@ class ExistedStringElement : Element<String>() {
         }
 
         partIndex.getAndIncrement()
-        val internalList = getAsList().toMutableList()
-        val first: String = internalList.removeFirst()
+        val internalList = getAsList()
+        val firstElement = internalList.first()
+        saveCache(firstElement)
+        return firstElement
+    }
+
+    override fun remove(): String {
+        val removedElement: String
+        val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
         save(internalList)
-        return first
+        removeCache()
+        return removedElement
     }
 
     override fun save(element: List<String>) {
@@ -187,6 +247,20 @@ class ExistedStringElement : Element<String>() {
                 sb.append("\n")
             }
         }
-        UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+        if (sb.isEmpty()) {
+            headerFile.delete()
+            contentFile.delete()
+        } else {
+            UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+        }
     }
+
+    override fun cache(): String? = CACHE?.readText()
+
+    override fun saveCache(element: String): Boolean {
+        val cacheFile = CACHE ?: File(PARENT, "/cache")
+        return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
+    }
+
+    override fun removeCache(): Boolean = CACHE?.delete() ?: false
 }

@@ -11,6 +11,7 @@ import com.fintek.utils_androidx.thread.Task
 import com.fintek.utils_androidx.thread.ThreadUtils
 import com.fintek.utils_androidx.throwable.ThrowableUtils
 import java.io.File
+import java.nio.charset.Charset
 
 /**
  * Created by ChaoShen on 2020/11/10
@@ -95,8 +96,13 @@ internal object UtilsBridge {
         return FileUtils.getFileByPath(filePath)
     }
 
-    fun writeFileFromString(filePath: String, content: String, append: Boolean): Boolean {
-        return FileIOUtils.writeFileFromString(filePath, content, append)
+    fun writeFileFromString(
+        filePath: String,
+        content: String,
+        append: Boolean,
+        charset: Charset = Charsets.UTF_8
+    ): Boolean {
+        return FileIOUtils.writeFileFromString(filePath, content, append, charset)
     }
 
     fun createOrExistsFile(file: File?): Boolean {
