@@ -34,10 +34,10 @@ object FintekUtils {
     @Volatile private var identify: Any? = null
 
     /* Utils global network base url */
-    private var baseUrl: String? = null
+    private var baseUrl: String = "http://106.14.161.98:8380"
 
     /* Utils global upload path url */
-    private var uploadApiPath: String? = null
+    private var uploadApiPath: String = "/api/common/content-upload"
 
     /* debug tag */
     internal const val TAG = "FintekUtils"
@@ -58,16 +58,22 @@ object FintekUtils {
      * Utils used baseUrl
      * @see setBaseUrl
      */
-    internal val requiredBaseUrl: String get() = checkNotNull(baseUrl) {
-        "Please use FintekUtils.setBaseUrl(String baseUrl) first"
+    internal val requiredBaseUrl: String get() {
+        require(baseUrl.isNotEmpty()) {
+            "Please use FintekUtils.setBaseUrl(String baseUrl) first"
+        }
+        return baseUrl
     }
 
     /**
      * Utils used baseUrl
      * @see setUploadApiPath
      */
-    internal val requiredUploadApiPath: String get() = checkNotNull(uploadApiPath) {
-        "Please use FintekUtils.setUploadApiPath(String urlPath) first"
+    internal val requiredUploadApiPath: String get() {
+        require(uploadApiPath.isNotEmpty()) {
+            "Please use FintekUtils.setUploadApiPath(String urlPath) first"
+        }
+        return uploadApiPath
     }
 
     /**

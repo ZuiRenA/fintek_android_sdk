@@ -14,9 +14,11 @@ class MyApplication : Application() {
         super.onCreate()
 
         FintekUtils.init(this)
-            .setBaseUrl("")
-            .setIdentify(object : FintekUtils.AbstractIdentify<String>() {
-                override fun invoke(): String = ""
+            .setIdentifyAsync(object : FintekUtils.AbstractIdentify<String>() {
+                override fun invoke(): String {
+                    // Time-consuming operation
+                    return "672"
+                }
             })
     }
 

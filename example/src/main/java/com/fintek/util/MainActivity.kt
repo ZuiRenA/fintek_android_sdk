@@ -7,6 +7,10 @@ import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.fintek.util_example.R
+import com.fintek.utils_androidx.encrypt.RSA
+import com.fintek.utils_androidx.encrypt.RSAUtil
+import com.fintek.utils_androidx.log.TimberUtil
+import com.fintek.utils_androidx.upload.UploadUtils
 
 class MainActivity : AppCompatActivity()  {
 
@@ -19,5 +23,6 @@ class MainActivity : AppCompatActivity()  {
             startActivity(Intent(this, MainJavaActivity::class.java))
         }
 
+        UploadUtils.upload()
     }
 }

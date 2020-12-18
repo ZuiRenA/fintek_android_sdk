@@ -1,6 +1,7 @@
 package com.fintek.utils_androidx.network
 
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.log.TimberUtil
 import com.fintek.utils_androidx.model.BaseResponse
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -42,7 +43,17 @@ class CoronetRequest {
             }
 
             request.body?.writeTo(outputStream)
+            TimberUtil.e(
+                "${request.method}: $baseUrl${request.url}",
+                request.body.toString(),
+                "body: ${request.body?.getBytes()?.decodeToString()}"
+            )
         }
+
+        TimberUtil.e(
+            "result: $baseUrl${request.url}",
+            resultStr
+        )
 
         GsonBuilder().enableComplexMapKeySerialization()
             .create()
@@ -53,7 +64,6 @@ class CoronetRequest {
         val urlInternal = URL(baseUrl + url)
         with(urlInternal.openConnection() as HttpURLConnection) {
             init()
-
 
             try {
                 BufferedReader(InputStreamReader(inputStream)).use {

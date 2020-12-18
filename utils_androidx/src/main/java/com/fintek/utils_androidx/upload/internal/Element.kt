@@ -3,12 +3,11 @@ package com.fintek.utils_androidx.upload.internal
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
-
 abstract class Element <T> {
 
-    protected abstract val total: AtomicInteger
+    internal abstract val total: AtomicInteger
 
-    protected abstract val partIndex: AtomicInteger
+    internal abstract val partIndex: AtomicInteger
 
     abstract fun getAsList(): List<T>
 
@@ -19,6 +18,8 @@ abstract class Element <T> {
     abstract fun save(element: List<T>)
 
     abstract fun cache(): T?
+
+    abstract fun header(): Any?
 
     abstract fun saveCache(element: T): Boolean
 

@@ -74,7 +74,7 @@ internal data class Header(
 
 internal class StringElement(
     rsa: String,
-    limit: Int = 100 * 1024, // 100kb, Base unit is byte
+    limit: Int = 10 * 1024, // 100kb, Base unit is byte
 ) : Element<String>() {
 
     override val total: AtomicInteger
@@ -89,7 +89,7 @@ internal class StringElement(
         val sb = StringBuilder()
         while (bis.read(buffer).also { i = it } > 0) {
             try {
-                var endIndex = 0
+                var endIndex = buffer.size
                 // filter the first 0 in the buffer
                 for (j in buffer.indices) {
                     if (buffer[j] == 0.toByte()) {
@@ -106,9 +106,13 @@ internal class StringElement(
             sb.append("\n")
             position ++
         }
-        sb.delete(sb.length - 2, sb.length)
+        sb.delete(sb.length - 1, sb.length)
         total = AtomicInteger(position)
         write(sb.toString())
+    }
+
+    override fun header(): Header {
+        return Header(total = total.get(), part = partIndex.get())
     }
 
     override fun getAsList(): List<String> {
@@ -167,7 +171,6 @@ internal class StringElement(
 
     override fun removeCache(): Boolean {
         if (CACHE == null) return false
-        remove()
         return CACHE?.delete() ?: false
     }
 
@@ -215,6 +218,10 @@ internal class ExistedStringElement : Element<String>() {
         } catch (e: Exception) {
             AtomicInteger()
         }
+    }
+
+    override fun header(): Header {
+        return Header(total = total.get(), part = partIndex.get())
     }
 
     override fun getAsList(): List<String> = contentFile.readLines()
@@ -266,7 +273,6 @@ internal class ExistedStringElement : Element<String>() {
 
     override fun removeCache(): Boolean {
         if (CACHE == null) return false
-        remove()
         return CACHE?.delete() ?: false
     }
 }

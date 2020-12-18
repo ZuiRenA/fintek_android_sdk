@@ -87,6 +87,9 @@ abstract class RequestBody {
      */
     open fun isOneShot(): Boolean = false
 
+    open fun getBytes(): ByteArray = byteArrayOf()
+
+    override fun toString(): String = "MediaType: ${contentType()}, contentLength: ${contentLength()}"
 
     companion object {
         /**
@@ -131,6 +134,8 @@ abstract class RequestBody {
                 override fun writeTo(outputStream: OutputStream) {
                     outputStream.write(this@toRequestBody, offset, byteCount)
                 }
+
+                override fun getBytes(): ByteArray = this@toRequestBody
             }
         }
 
