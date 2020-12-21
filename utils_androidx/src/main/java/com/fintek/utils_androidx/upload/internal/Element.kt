@@ -9,6 +9,8 @@ internal abstract class Element <T> {
 
     internal abstract val partIndex: AtomicInteger
 
+    internal open var isMonthly: Boolean = false
+
     abstract fun getAsList(): List<T>
 
     abstract fun next(): T

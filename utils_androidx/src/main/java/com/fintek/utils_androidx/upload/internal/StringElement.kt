@@ -74,7 +74,7 @@ internal data class Header(
 
 internal class StringElement(
     rsa: String,
-    limit: Int = 10 * 1024, // 100kb, Base unit is byte
+    limit: Int = 100 * 1024, // 100kb, Base unit is byte
 ) : Element<String>() {
 
     override val total: AtomicInteger
