@@ -3,7 +3,7 @@ package com.fintek.utils_androidx.upload.internal
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
-abstract class Element <T> {
+internal abstract class Element <T> {
 
     internal abstract val total: AtomicInteger
 

@@ -56,9 +56,9 @@ object UploadUtils {
             // every month only upload once
             return
         }
-//        if (IS_EXISTED || IS_UPLOADING) {
-//            internalUpload()
-//        }
+        if (IS_EXISTED || IS_UPLOADING) {
+            internalUpload()
+        }
 
         // delete all cache file, start a new upload
         elementDelete()
@@ -118,14 +118,22 @@ object UploadUtils {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     internal fun monthlyUpload() {
         val monthCount = SharedPreferenceUtils.getInt(MONTH_UPLOAD_COUNT)
+        if (monthCount >= 1) {
+            return
+        }
 
+        upload()
     }
 
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun elementUpload(element: Element<String>) {
         if (!element.hasNext()) {
-            TimberUtil.e("Element is Empty: ${!IS_EXISTED}")
+            TimberUtil.e("Element is Empty: (isExisted-${!IS_EXISTED}, isUploading-${!IS_UPLOADING})")
+            val monthCount = SharedPreferenceUtils.getInt(MONTH_UPLOAD_COUNT)
+            SharedPreferenceUtils.apply {
+                putInt(MONTH_UPLOAD_COUNT, monthCount)
+            }
             return
         }
 
@@ -174,7 +182,7 @@ object UploadUtils {
 
     private val contentVersion: String get() {
         val calendar = Calendar.getInstance()
-        return "${calendar.get(Calendar.YEAR)}${calendar.get(Calendar.MONTH)}"
+        return "${calendar.get(Calendar.YEAR)}${calendar.get(Calendar.MONTH) + 1}"
     }
 
     private fun <T> consumer(block: (t: T) -> Unit) = object : FintekUtils.Consumer<T> {
@@ -183,7 +191,7 @@ object UploadUtils {
         }
     }
 
-    const val RSA_UPLOAD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDD04SDnhHVYY9f2W3cXNia3b5b" +
+    private const val RSA_UPLOAD_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDD04SDnhHVYY9f2W3cXNia3b5b" +
             "KlxthNAX1BoSIPdf4oUaSqdabfdSTgNdhppltA9ddpNN86mb3vk3FXvxn896E5mz" +
             "b7WU4OU8LHlt0H4OpQRfMTS+O0vS9biJ2JSWzkKp2k4ehjOmvAtNZDVwjVgYXEcZ" +
             "gzZAL1vvg72Afy58OwIDAQAB"

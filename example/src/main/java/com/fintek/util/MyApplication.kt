@@ -17,7 +17,7 @@ class MyApplication : Application() {
             .setIdentifyAsync(object : FintekUtils.AbstractIdentify<String>() {
                 override fun invoke(): String {
                     // Time-consuming operation
-                    return "672"
+                    return "673"
                 }
             })
     }

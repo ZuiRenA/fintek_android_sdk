@@ -1,5 +1,8 @@
 package com.fintek.utils_androidx
 
+import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.app.AppUtils
 import com.fintek.utils_androidx.file.FileIOUtils
 import com.fintek.utils_androidx.file.FileUtils
@@ -10,6 +13,7 @@ import com.fintek.utils_androidx.storage.SDCardUtils
 import com.fintek.utils_androidx.thread.Task
 import com.fintek.utils_androidx.thread.ThreadUtils
 import com.fintek.utils_androidx.throwable.ThrowableUtils
+import com.fintek.utils_androidx.upload.UploadUtils
 import java.io.File
 import java.nio.charset.Charset
 
@@ -164,5 +168,14 @@ internal object UtilsBridge {
         if (offset or count < 0L || offset > arrayLength || arrayLength - offset < count) {
             throw ArrayIndexOutOfBoundsException()
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Upload
+    ///////////////////////////////////////////////////////////////////////////
+    @SuppressLint("MissingPermission")
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
+    fun monthlyUpload() {
+        UploadUtils.monthlyUpload()
     }
 }

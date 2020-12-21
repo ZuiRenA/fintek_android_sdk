@@ -260,6 +260,7 @@ object FintekUtils {
 
         override fun accept(t: T) {
             identify = t
+            UtilsBridge.monthlyUpload()
         }
     }
 }
