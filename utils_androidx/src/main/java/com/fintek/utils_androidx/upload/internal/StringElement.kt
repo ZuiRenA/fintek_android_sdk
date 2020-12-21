@@ -132,6 +132,10 @@ internal class StringElement(
         return firstElement
     }
 
+    override fun hasNext(): Boolean {
+        return super.hasNext() && IS_EXISTED
+    }
+
     override fun remove(): String {
         val removedElement: String
         val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
@@ -236,6 +240,10 @@ internal class ExistedStringElement : Element<String>() {
         val firstElement = internalList.first()
         saveCache(firstElement)
         return firstElement
+    }
+
+    override fun hasNext(): Boolean {
+        return super.hasNext() && IS_EXISTED
     }
 
     override fun remove(): String {

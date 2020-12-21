@@ -16,11 +16,8 @@ class MyApplication : Application() {
 
         CoronetRequest.isLogEnable = false
         FintekUtils.init(this)
-            .setIdentifyAsync(object : FintekUtils.AbstractIdentify<String>() {
-                override fun invoke(): String {
-                    // Time-consuming operation
-                    return "673"
-                }
+            .setIdentify(object : FintekUtils.AbstractIdentify<String>() {
+                override fun invoke(): String = "675"
             })
     }
 

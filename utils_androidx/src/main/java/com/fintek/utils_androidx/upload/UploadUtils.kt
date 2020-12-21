@@ -89,6 +89,8 @@ object UploadUtils {
                     elementUpload(element)
                 }).onError(consumer {
                     internalUpload()
+                }).onCancel(consumer {
+                    UtilsBridge.e(TAG, "internalUpload Cancel")
                 })
             task.execute(Dispatchers.CPU)
         } else {
@@ -137,7 +139,7 @@ object UploadUtils {
         // delete all cache file, start a new upload
         elementDelete()
         // create new struct json
-        UtilsBridge.executeByCPU(createNewStructJson(consumer { json ->
+        UtilsBridge.executeBySingle(createNewStructJson(consumer { json ->
             val element: Element<String> = StringElement(json)
             element.isMonthly = isMonthly
             val header = element.header() as Header
@@ -148,6 +150,8 @@ object UploadUtils {
                     elementUpload(element)
                 }).onError(consumer {
 
+                }).onCancel(consumer {
+                    UtilsBridge.e(TAG, "upload Cancel")
                 })
             task.execute(Dispatchers.CPU)
         }))
@@ -156,7 +160,7 @@ object UploadUtils {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun elementUpload(element: Element<String>) {
         if (!element.hasNext()) {
-            UtilsBridge.e(TAG, "Element is Empty: (isExisted-${IS_EXISTED}, isUploading-${IS_UPLOADING})")
+            UtilsBridge.e(TAG, "Success!! Element is Empty: (isExisted-${IS_EXISTED}, isUploading-${IS_UPLOADING})")
             if (element.isMonthly) {
                 val calendar = Calendar.getInstance()
                 monthlyRecord = MonthlyRecord(
@@ -185,6 +189,8 @@ object UploadUtils {
             }
         }).onError(consumer {
             elementUpload(element)
+        }).onCancel(consumer {
+            UtilsBridge.e(TAG, "elementUpload Cancel")
         })
 
         task.execute(Dispatchers.CPU)

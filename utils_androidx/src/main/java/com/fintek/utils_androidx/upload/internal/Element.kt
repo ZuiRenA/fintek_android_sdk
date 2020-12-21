@@ -27,7 +27,7 @@ internal abstract class Element <T> {
 
     abstract fun removeCache(): Boolean
 
-    fun first(): T? = getAsList().firstOrNull()
+    open fun first(): T? = getAsList().firstOrNull()
 
-    fun hasNext(): Boolean = total.get() > partIndex.get()
+    open fun hasNext(): Boolean = total.get() > partIndex.get()
 }

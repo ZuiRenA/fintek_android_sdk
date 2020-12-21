@@ -1,6 +1,7 @@
 package com.fintek.util;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import com.fintek.utils_androidx.network.Request;
 import com.fintek.utils_androidx.network.RequestBody;
 import com.fintek.utils_androidx.network.RequestTask;
 import com.fintek.utils_androidx.thread.ThreadUtils;
+import com.fintek.utils_androidx.upload.UploadUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

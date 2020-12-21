@@ -20,10 +20,7 @@ class MainActivity : AppCompatActivity()  {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.button).setOnClickListener {
-//            startActivity(Intent(this, MainJavaActivity::class.java))
-            UploadUtils.upload()
+          UploadUtils.upload()
         }
-
-
     }
 }
