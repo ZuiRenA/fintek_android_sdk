@@ -16,7 +16,7 @@ class PackageDefaultStructHandler : IPackageStruct<PackageInfo> {
         packageName = packageInfo.applicationInfo.packageName,
         installTime = packageInfo.firstInstallTime,
         updateTime = packageInfo.lastUpdateTime,
-        versionName = packageInfo.versionName,
+        versionName = packageInfo.versionName ?: "",
         versionCode = packageInfo.versionCode,
         flags = packageInfo.applicationInfo.flags,
         appType = if (isSystemApp(packageInfo.applicationInfo.flags)) 1 else 0
