@@ -6,9 +6,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-
 
 private val PARENT: File? get() {
     val file: File? = FintekUtils.requiredContext.getExternalFilesDir("element/")
@@ -26,6 +26,8 @@ internal val HEADER: File? get() {
     }
     return file
 }
+
+
 
 internal val CONTENT: File? get() {
     val file = File(PARENT, "/content")
@@ -59,6 +61,10 @@ internal val IS_UPLOADING: Boolean get() {
     return true
 }
 
+private val HEADER_PATH get() = HEADER?.path ?: File(PARENT, "/header").path
+private val CONTENT_PATH get() = CONTENT?.path ?: File(PARENT, "/content").path
+private val CACHE_PATH get() = CACHE?.path ?: File(PARENT, "/cache").path
+
 internal fun elementDelete() {
     HEADER?.delete()
     CONTENT?.delete()
@@ -74,7 +80,7 @@ internal data class Header(
 
 internal class StringElement(
     rsa: String,
-    limit: Int = 100 * 1024, // 100kb, Base unit is byte
+    limit: Int = 10 * 1024, // 100kb, Base unit is byte
 ) : Element<String>() {
 
     override val total: AtomicInteger
@@ -138,7 +144,11 @@ internal class StringElement(
 
     override fun remove(): String {
         val removedElement: String
-        val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
+        val internalList: MutableList<String> = getAsList().toMutableList()
+        if (internalList.isNullOrEmpty()) {
+            return ""
+        }
+        removedElement = internalList.removeFirst()
         save(internalList)
         return removedElement
     }
@@ -199,13 +209,11 @@ internal class StringElement(
 internal class ExistedStringElement : Element<String>() {
     override val total: AtomicInteger
     override val partIndex: AtomicInteger
-    private val headerFile: File = checkNotNull(HEADER)
-    private val contentFile: File = checkNotNull(CONTENT)
 
     init {
         total = try {
             val header = gson.fromJson<Header>(
-                headerFile.readText(),
+                HEADER?.readText(),
                 object : TypeToken<Header>() {}.type
             )
             AtomicInteger(header.total)
@@ -215,7 +223,7 @@ internal class ExistedStringElement : Element<String>() {
 
         partIndex = try {
             val header = gson.fromJson<Header>(
-                headerFile.readText(),
+                HEADER?.readText(),
                 object : TypeToken<Header>() {}.type
             )
             AtomicInteger(header.part)
@@ -228,7 +236,10 @@ internal class ExistedStringElement : Element<String>() {
         return Header(total = total.get(), part = partIndex.get())
     }
 
-    override fun getAsList(): List<String> = contentFile.readLines()
+    override fun getAsList(): List<String> {
+        val contentList = CONTENT?.readLines()
+        return contentList ?: emptyList()
+    }
 
     override fun next(): String {
         if (!hasNext()) {
@@ -248,14 +259,18 @@ internal class ExistedStringElement : Element<String>() {
 
     override fun remove(): String {
         val removedElement: String
-        val internalList: List<String> = getAsList().toMutableList().also { removedElement = it.removeFirst() }
+        val internalList: MutableList<String> = getAsList().toMutableList()
+        if (internalList.isNullOrEmpty()) {
+            return ""
+        }
+        removedElement = internalList.removeFirst()
         save(internalList)
         return removedElement
     }
 
     override fun save(element: List<String>) {
         val header = Header(total = total.get(), part = partIndex.get())
-        UtilsBridge.writeFileFromString(headerFile.path, gson.toJson(header), false)
+        UtilsBridge.writeFileFromString(HEADER_PATH, gson.toJson(header), false)
 
         val sb = StringBuilder()
         for (i in element.indices) {
@@ -265,10 +280,10 @@ internal class ExistedStringElement : Element<String>() {
             }
         }
         if (sb.isEmpty()) {
-            headerFile.delete()
-            contentFile.delete()
+            HEADER?.delete()
+            CONTENT?.delete()
         } else {
-            UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+            UtilsBridge.writeFileFromString(CONTENT_PATH, sb.toString(), false)
         }
     }
 

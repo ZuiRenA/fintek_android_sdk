@@ -34,7 +34,7 @@ object FintekUtils {
     @Volatile private var identify: Any? = null
 
     /* Utils global network base url */
-    private var baseUrl: String = "http://106.14.161.98:8380"
+    private var baseUrl: String = "https://uatdimsum.devdimsum.com/gateway-api"
 
     /* Utils global upload path url */
     private var uploadApiPath: String = "/api/common/content-upload"

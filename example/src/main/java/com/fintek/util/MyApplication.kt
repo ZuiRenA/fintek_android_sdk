@@ -14,10 +14,9 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        CoronetRequest.isLogEnable = false
         FintekUtils.init(this)
             .setIdentify(object : FintekUtils.AbstractIdentify<String>() {
-                override fun invoke(): String = "675"
+                override fun invoke(): String = "999"
             })
     }
 

@@ -43,8 +43,8 @@ object UploadUtils {
         .setBaseUrl(FintekUtils.requiredBaseUrl)
         .addHeader("Connection", "Keep-Alive")
         .addHeader("Content-Type", "application/Json;charset:Utf-8")
-        .setConnectTimeout(60, TimeUnit.SECONDS)
-        .setReadTimeout(60, TimeUnit.SECONDS)
+        .setConnectTimeout(5, TimeUnit.SECONDS)
+        .setReadTimeout(5, TimeUnit.SECONDS)
         .build()
 
     /**
@@ -135,11 +135,11 @@ object UploadUtils {
         if (IS_EXISTED || IS_UPLOADING) {
             internalUpload()
         }
-
-        // delete all cache file, start a new upload
-        elementDelete()
         // create new struct json
         UtilsBridge.executeBySingle(createNewStructJson(consumer { json ->
+            // delete all cache file, start a new upload
+            elementDelete()
+
             val element: Element<String> = StringElement(json)
             element.isMonthly = isMonthly
             val header = element.header() as Header
@@ -172,6 +172,7 @@ object UploadUtils {
             SharedPreferenceUtils.apply {
                 putInt(UPLOAD_COUNT, uploadCount + 1)
             }
+            elementDelete()
             return
         }
 
