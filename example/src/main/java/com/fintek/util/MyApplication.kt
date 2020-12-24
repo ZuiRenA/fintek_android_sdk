@@ -16,7 +16,7 @@ class MyApplication : Application() {
 
         FintekUtils.init(this)
             .setIdentify(object : FintekUtils.AbstractIdentify<String>() {
-                override fun invoke(): String = "999"
+                override fun invoke(): String = "1000"
             })
     }
 
