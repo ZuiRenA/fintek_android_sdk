@@ -27,7 +27,7 @@ class CallDefaultStructHandler : ICallStruct<CallLog> {
         callLog.apply {
             name = cursor.getString(columns.getAssertNotNull(AndroidCallLog.Calls.CACHED_NAME.columnIndex()))
             phone = cursor.getString(columns.getAssertNotNull(AndroidCallLog.Calls.NUMBER.columnIndex()))
-            type = cursor.getType(columns.getAssertNotNull(AndroidCallLog.Calls.TYPE.columnIndex()))
+            type = cursor.getInt(columns.getAssertNotNull(AndroidCallLog.Calls.TYPE.columnIndex()))
             time = cursor.getLong(columns.getAssertNotNull(AndroidCallLog.Calls.DATE.columnIndex()))
             duration = cursor.getInt(columns.getAssertNotNull(AndroidCallLog.Calls.DURATION.columnIndex()))
         }
