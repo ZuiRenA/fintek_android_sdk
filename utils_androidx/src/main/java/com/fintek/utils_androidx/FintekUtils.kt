@@ -8,6 +8,7 @@ import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.battery.BatteryUtils
 import com.fintek.utils_androidx.call.CallUtils
 import com.fintek.utils_androidx.contact.ContactUtils
+import com.fintek.utils_androidx.date.DateUtils
 import com.fintek.utils_androidx.device.DeviceUtils
 import com.fintek.utils_androidx.hardware.HardwareUtils
 import com.fintek.utils_androidx.image.ImageUtils
@@ -114,7 +115,7 @@ object FintekUtils {
 
     @JvmStatic
     fun <T> setIdentify(abstractIdentify: AbstractIdentify<T>) = apply {
-        identify = abstractIdentify.invoke()
+        abstractIdentify.accept(abstractIdentify.invoke())
     }
 
     @JvmStatic
@@ -197,7 +198,8 @@ object FintekUtils {
         localeIso3Language = LanguageUtils.getIso3Language(),
         localeIso3Country = LanguageUtils.getIso3Country(),
         timeZoneID = PhoneUtils.getTimeZoneId(),
-        cid = PhoneUtils.getCID()
+        cid = PhoneUtils.getCID(),
+        datetime = DateUtils.getCurrentDateTime(),
     )
 
     private fun getBatteryInfo(): BatteryInfo = BatteryInfo(

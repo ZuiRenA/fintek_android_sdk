@@ -100,6 +100,24 @@ object UploadUtils {
     }
 
     @SuppressLint("MissingPermission", "NewApi")
+    internal fun cycleUpload(timeCycleUnit: TimeCycleUnit) {
+        val record: MonthlyRecord? = monthlyRecord
+        val isSameTime = timeCycleUnit.isSameTime(record?.toDateTime())
+        val isUploaded: Boolean = record != null && record.isUploaded
+
+        UtilsBridge.e(TAG, "preview: $record")
+        if (isSameTime && isUploaded) {
+            // every month only upload once
+            UtilsBridge.e(TAG, "every $timeCycleUnit only upload once, uploaded this $timeCycleUnit")
+            Toast.makeText(FintekUtils.requiredContext, "Every $timeCycleUnit only upload once, uploaded this $timeCycleUnit", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // If not uploaded this month, then upload
+        upload(true)
+    }
+
+    @SuppressLint("MissingPermission", "NewApi")
     internal fun monthlyUpload() {
         val record: MonthlyRecord? = monthlyRecord
         val calendar = Calendar.getInstance()
@@ -167,6 +185,10 @@ object UploadUtils {
                 monthlyRecord = MonthlyRecord(
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.WEEK_OF_MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH),
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.SECOND),
                     true
                 )
             }
@@ -244,8 +266,16 @@ object UploadUtils {
     internal data class MonthlyRecord(
         val year: Int,
         val month: Int,
+        val week: Int,
+        val day: Int,
+        val hour: Int,
+        val second: Int,
         val isUploaded: Boolean
-    )
+    ) {
+        fun toDateTime(): TimeCycleUnit.DateTime = TimeCycleUnit.DateTime(
+            year, month, week, day, hour, second
+        )
+    }
 
     private data class UnitResponse(
         val code: String,

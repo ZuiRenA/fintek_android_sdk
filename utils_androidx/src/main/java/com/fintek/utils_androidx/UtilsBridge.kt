@@ -14,6 +14,7 @@ import com.fintek.utils_androidx.thread.Task
 import com.fintek.utils_androidx.thread.ThreadUtils
 import com.fintek.utils_androidx.throwable.ThrowableUtils
 import com.fintek.utils_androidx.upload.UploadUtils
+import com.fintek.utils_androidx.upload.internal.TimeCycleUnit
 import java.io.File
 import java.nio.charset.Charset
 
@@ -176,6 +177,6 @@ internal object UtilsBridge {
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun monthlyUpload() {
-        UploadUtils.monthlyUpload()
+        UploadUtils.cycleUpload(TimeCycleUnit.Hour)
     }
 }

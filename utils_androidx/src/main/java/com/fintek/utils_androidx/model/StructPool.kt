@@ -50,6 +50,7 @@ data class PhoneInfo(
     val localeIso3Country: String,
     val timeZoneID: String,
     val cid: String,
+    val datetime: String,
 )
 
 data class BatteryInfo(
