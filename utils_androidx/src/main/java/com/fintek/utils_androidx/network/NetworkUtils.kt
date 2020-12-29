@@ -588,7 +588,7 @@ object NetworkUtils {
     fun getConfiguredBSSID(): List<String> {
         val wm = wifiManager ?: return emptyList()
         return try {
-            wm.configuredNetworks.map { it.BSSID }
+            wm.configuredNetworks.mapNotNull { it.BSSID }
         } catch (e: Exception) {
             e.printStackTrace()
             emptyList()

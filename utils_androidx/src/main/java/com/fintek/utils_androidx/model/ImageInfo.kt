@@ -9,28 +9,16 @@ import com.fintek.utils_androidx.Optional
  */
 data class ImageInfo(
     /**
-     * latitude，e.g. 31/1,58/1,253560/10000 or null
+     * latitude，e.g. 31.2377 or 0.0 or null
      */
-    @Optional("31/1,58/1,253560/10000")
-    var latitude: String? = null,
+    @Optional("31.2377")
+    var latitude: Float? = null,
 
     /**
-     * latitudeRef, it will only in ["N", "S"] or null
+     * longitude e.g. 121.4256 or 0.0 or null
      */
-    @Optional(anyOf = ["N", "S"])
-    var latitudeRef: String? = null,
-
-    /**
-     * longitude e.g. 118/1,44/1,491207/10000 or null
-     */
-    @Optional("118/1,44/1,491207/10000")
-    var longitude: String? = null,
-
-    /**
-     * longitudeRef, it will only in ["E", "W"] or null
-     */
-    @Optional(anyOf = ["E", "W"])
-    var longitudeRef: String? = null,
+    @Optional("121.4256")
+    var longitude: Float? = null,
 
     /**
      * shooting time
@@ -58,10 +46,8 @@ data class ImageInfo(
     var make: String? = null
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
+        parcel.readFloat(),
+        parcel.readFloat(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
@@ -69,10 +55,8 @@ data class ImageInfo(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(latitude)
-        parcel.writeString(latitudeRef)
-        parcel.writeString(longitude)
-        parcel.writeString(longitudeRef)
+        parcel.writeFloat(latitude ?: 0f)
+        parcel.writeFloat(longitude ?: 0f)
         parcel.writeString(dateTime)
         parcel.writeString(gpsTimeStamp)
         parcel.writeString(size)
