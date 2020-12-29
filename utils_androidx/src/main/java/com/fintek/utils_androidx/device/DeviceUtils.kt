@@ -11,7 +11,10 @@ import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
 import java.io.File
+import java.io.IOException
 import java.util.*
 
 
@@ -142,7 +145,17 @@ object DeviceUtils {
     fun getGaid(consumer: FintekUtils.Consumer<String>) {
         UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             override fun doInBackground(): String {
-                return AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
+                return try {
+                    AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
+                } catch (e: GooglePlayServicesNotAvailableException) {
+                    ""
+                } catch (e: GooglePlayServicesRepairableException) {
+                    ""
+                } catch (e: IOException) {
+                    ""
+                } catch (e: IllegalStateException) {
+                    ""
+                }
             }
         })
     }
@@ -176,7 +189,8 @@ object DeviceUtils {
      */
     @JvmStatic
     fun getAndroidId(): String = Settings.Secure.getString(
-        FintekUtils.requiredContext.contentResolver, Settings.Secure.ANDROID_ID)
+        FintekUtils.requiredContext.contentResolver, Settings.Secure.ANDROID_ID
+    )
 
     /**
      * Returns the unique subscriber ID, for example, the IMSI for a GSM phone.

@@ -151,7 +151,7 @@ object StorageUtils {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             val getFsUuid =
                                 obj.javaClass.getDeclaredMethod("getFsUuid")
-                            val fsUuid = getFsUuid.invoke(obj) as String
+                            val fsUuid = getFsUuid.invoke(obj) as? String
                             totalSize = getTotalSize(FintekUtils.requiredContext, fsUuid) //8.0 以后使用
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) { //7.1.1
                             val getPrimaryStorageSize =

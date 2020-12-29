@@ -46,7 +46,6 @@ class CoronetRequest {
                     addRequestProperty(key, value)
                 }
             }
-
             request.body?.writeTo(outputStream)
             if (isLogEnable) {
                 TimberUtil.e(

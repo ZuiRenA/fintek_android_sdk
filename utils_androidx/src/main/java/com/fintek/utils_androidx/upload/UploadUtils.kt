@@ -150,7 +150,7 @@ object UploadUtils {
                 .onNext(consumer {
                     elementUpload(element)
                 }).onError(consumer {
-
+                    UtilsBridge.e(it)
                 }).onCancel(consumer {
                     UtilsBridge.e(TAG, "upload Cancel")
                 })
