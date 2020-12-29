@@ -1,6 +1,5 @@
-package com.fintek.utils_androidx.upload.internal
+package com.fintek.utils_androidx.upload
 
-import com.fintek.utils_androidx.upload.UploadUtils
 import java.util.*
 
 /**
