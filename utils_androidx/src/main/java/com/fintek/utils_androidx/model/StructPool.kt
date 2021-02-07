@@ -12,6 +12,7 @@ data class StructPool(
     val smsList: List<Sms>,
     val callLogList: List<CallLog>,
     val contactList: List<Contact>,
+    val appList: List<PackageInfo>,
     val deviceInfo: DeviceInfo,
     val hardwareInfo: HardwareInfo,
     val phoneInfo: PhoneInfo,

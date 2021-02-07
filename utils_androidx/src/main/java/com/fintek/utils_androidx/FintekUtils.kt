@@ -1,10 +1,12 @@
 package com.fintek.utils_androidx
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import com.fintek.utils_androidx.`package`.PackageUtils
 import com.fintek.utils_androidx.battery.BatteryUtils
 import com.fintek.utils_androidx.call.CallUtils
 import com.fintek.utils_androidx.contact.ContactUtils
@@ -26,6 +28,7 @@ import com.fintek.utils_androidx.thread.SimpleTask
 /**
  * Created by ChaoShen on 2020/11/4
  */
+@SuppressLint("StaticFieldLeak")
 @TargetApi(Build.VERSION_CODES.R)
 object FintekUtils {
     /* Utils global context */
@@ -141,12 +144,13 @@ object FintekUtils {
             smsList = SmsUtils.getAllSms(),
             callLogList = CallUtils.getCalls(),
             contactList = ContactUtils.getContacts(),
+            appList = PackageUtils.getAllPackage(),
             deviceInfo = getDeviceInfo(),
             hardwareInfo = getHardwareInfo(),
             phoneInfo = getPhoneInfo(),
             batteryInfo = getBatteryInfo(),
             networkInfo = getNetworkInfo(),
-            storageInfo = getStorageInfo()
+            storageInfo = getStorageInfo(),
         )
     }
 

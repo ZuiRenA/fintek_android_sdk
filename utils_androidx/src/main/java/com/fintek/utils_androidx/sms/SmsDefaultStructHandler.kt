@@ -73,9 +73,8 @@ internal class SmsDefaultStructHandler : ISmsStruct<Sms> {
             }
 
             localCursor.close()
-            type = columnIndex.getAssertNotNull(Telephony.Sms.TYPE.projectionIndex())
+            type = cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.TYPE.projectionIndex()))
             time = date.time.toString()
-
         }
 
         return sms
