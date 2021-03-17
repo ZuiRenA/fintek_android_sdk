@@ -238,8 +238,8 @@ object FintekUtils {
     private fun getStorageInfo(): StorageInfo = StorageInfo(
         mainStorage = StorageUtils.getMainStoragePath(),
         externalStorage = StorageUtils.getExternalStoragePath(),
-        storageTotalSize = StorageUtils.getTotalSize(),
-        storageAvailableSize = StorageUtils.getAvailableSize(),
+        storageTotalSize = StorageUtils.getTotalSizeRepaired(),
+        storageAvailableSize = StorageUtils.getAvailableSizeRepaired(),
         sdCardTotalSize = SDCardUtils.getTotalSize(),
         sdCardAvailableSize = SDCardUtils.getAvailableSize()
     )

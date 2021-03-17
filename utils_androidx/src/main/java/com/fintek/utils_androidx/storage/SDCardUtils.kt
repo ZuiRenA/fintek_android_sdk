@@ -40,6 +40,14 @@ object SDCardUtils {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun getUsedSize(): Long = getTotalSize() - getAvailableSize()
 
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun getTotalSizeString(): String = getDiskString().second
+
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun getAvailableSizeString(): String = getDiskString().first
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun getDisk(): Pair<Long, Long> {
         val sdCardInfo = getSDCardInfo()
@@ -49,16 +57,45 @@ object SDCardUtils {
         for (i in sdCardInfo.indices) {
             if (sdCardInfo[i].isRemovable) {
                 val s = sdCardInfo[i].path
-                return getDiskCapacity(s)
+                return getDiskCapacityIgnoreUnit(s)
             }
         }
         return 0L to 0L
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    fun getDiskCapacity(
+    private fun getDiskString(): Pair<String, String> {
+        val sdCardInfo = getSDCardInfo()
+        if (sdCardInfo.isEmpty()) {
+            return "" to ""
+        }
+        for (i in sdCardInfo.indices) {
+            if (sdCardInfo[i].isRemovable) {
+                val s = sdCardInfo[i].path
+                return getDiskCapacityString(s)
+            }
+        }
+        return "" to ""
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private fun getDiskCapacityString(
         path: String
-    ): Pair<Long, Long> {
+    ): Pair<String, String> {
+        val file = File(path)
+        if (!file.exists()) {
+            return "" to ""
+        }
+        val stat = StatFs(path)
+        val blockSize = stat.blockSizeLong
+        val totalBlockCount = stat.blockCountLong
+        val feeBlockCount = stat.availableBlocksLong
+        return Formatter.formatFileSize(FintekUtils.requiredContext, blockSize * feeBlockCount) to
+                Formatter.formatFileSize(FintekUtils.requiredContext, blockSize * totalBlockCount)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun getDiskCapacityIgnoreUnit(path: String): Pair<Long, Long> {
         val file = File(path)
         if (!file.exists()) {
             return 0L to 0L
@@ -67,8 +104,7 @@ object SDCardUtils {
         val blockSize = stat.blockSizeLong
         val totalBlockCount = stat.blockCountLong
         val feeBlockCount = stat.availableBlocksLong
-        return Formatter.formatFileSize(FintekUtils.requiredContext, blockSize * feeBlockCount).toLong() to
-                Formatter.formatFileSize(FintekUtils.requiredContext, blockSize * totalBlockCount).toLong()
+        return blockSize * feeBlockCount to blockSize * totalBlockCount
     }
 
     private fun getSDCardInfo(): List<SDCardInfo> {
