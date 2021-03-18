@@ -103,7 +103,7 @@ object StorageUtils {
         try {
             val storageTotalSize: String
             val storageAvailableSize: String
-            val storageStr = queryWithStorageManagerRepaired()
+            val storageStr = queryWithStorageManagerBug()
             if (storageStr.contains("-")) {
                 val split = storageStr.split("-").toTypedArray()
                 val storageTotalSizeStr = split[0]
