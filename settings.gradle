@@ -1,3 +1,4 @@
+include ':ocr_camera'
 include ':ntl_utils'
 include ':utils_webview'
 include ':utils_androidx'
