@@ -1,17 +1,17 @@
-package com.fintek.utils_androidx.upload.internal
+package com.fintek.ntl_utils.upload.internal
 
+import com.fintek.ntl_utils.NtlUtils
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.file.FileIOUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.ByteArrayInputStream
 import java.io.File
-import java.io.FileNotFoundException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 private val PARENT: File? get() {
-    val file: File? = FintekUtils.requiredContext.getExternalFilesDir("element/")
+    val file: File? = NtlUtils.requiredContext.getExternalFilesDir("element/")
     val isExist = file?.exists() ?: false
     if (!isExist) {
         file?.mkdirs()
@@ -158,7 +158,7 @@ internal class StringElement(
         val contentFile = CONTENT ?: File(PARENT, "/content")
 
         val header = Header(total = total.get(), part = partIndex.get())
-        UtilsBridge.writeFileFromString(headerFile.path, gson.toJson(header), false)
+        FileIOUtils.writeFileFromString(headerFile.path, gson.toJson(header), false)
 
         val sb = StringBuilder()
         for (i in element.indices) {
@@ -172,7 +172,7 @@ internal class StringElement(
             headerFile.delete()
             contentFile.delete()
         } else {
-            UtilsBridge.writeFileFromString(contentFile.path, sb.toString(), false)
+            FileIOUtils.writeFileFromString(contentFile.path, sb.toString(), false)
         }
     }
 
@@ -180,7 +180,7 @@ internal class StringElement(
 
     override fun saveCache(element: String): Boolean {
         val cacheFile = CACHE ?: File(PARENT, "/cache")
-        return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
+        return FileIOUtils.writeFileFromString(cacheFile.path, element, false)
     }
 
     override fun removeCache(): Boolean {
@@ -195,14 +195,14 @@ internal class StringElement(
             headerFile.parentFile?.mkdirs()
         }
         val header = Header(total = total.get(), part = partIndex.get())
-        UtilsBridge.writeFileFromString(headerFile.path, gson.toJson(header), false)
+        FileIOUtils.writeFileFromString(headerFile.path, gson.toJson(header), false)
 
         val contentFile = File(PARENT, "/content")
         val contentParentExist = contentFile.parentFile?.exists() ?: false
         if (!contentParentExist) {
             contentFile.parentFile?.mkdirs()
         }
-        UtilsBridge.writeFileFromString(contentFile.path, content, false)
+        FileIOUtils.writeFileFromString(contentFile.path, content, false)
     }
 }
 
@@ -270,7 +270,7 @@ internal class ExistedStringElement : Element<String>() {
 
     override fun save(element: List<String>) {
         val header = Header(total = total.get(), part = partIndex.get())
-        UtilsBridge.writeFileFromString(HEADER_PATH, gson.toJson(header), false)
+        FileIOUtils.writeFileFromString(HEADER_PATH, gson.toJson(header), false)
 
         val sb = StringBuilder()
         for (i in element.indices) {
@@ -283,7 +283,7 @@ internal class ExistedStringElement : Element<String>() {
             HEADER?.delete()
             CONTENT?.delete()
         } else {
-            UtilsBridge.writeFileFromString(CONTENT_PATH, sb.toString(), false)
+            FileIOUtils.writeFileFromString(CONTENT_PATH, sb.toString(), false)
         }
     }
 
@@ -291,7 +291,7 @@ internal class ExistedStringElement : Element<String>() {
 
     override fun saveCache(element: String): Boolean {
         val cacheFile = CACHE ?: File(PARENT, "/cache")
-        return UtilsBridge.writeFileFromString(cacheFile.path, element, false)
+        return FileIOUtils.writeFileFromString(cacheFile.path, element, false)
     }
 
     override fun removeCache(): Boolean {

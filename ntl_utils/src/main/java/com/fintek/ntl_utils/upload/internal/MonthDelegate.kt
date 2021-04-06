@@ -1,7 +1,7 @@
-package com.fintek.utils_androidx.upload.internal
+package com.fintek.ntl_utils.upload.internal
 
 import com.fintek.utils_androidx.sharedPreference.SharedPreferenceUtils
-import com.fintek.utils_androidx.upload.UploadUtils
+import com.fintek.ntl_utils.upload.UploadUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlin.properties.ReadWriteProperty

@@ -1,6 +1,5 @@
-package com.fintek.utils_androidx.upload.internal
+package com.fintek.ntl_utils.upload.internal
 
-import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 internal abstract class Element <T> {
