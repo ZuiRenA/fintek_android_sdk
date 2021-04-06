@@ -85,5 +85,6 @@ dependencies {
     
     implementation project(path: ":utils_androidx")
     implementation project(":ntl_utils")
+    implementation project(":ocr_camera")
     implementation 'com.google.code.gson:gson:2.8.6'
 }

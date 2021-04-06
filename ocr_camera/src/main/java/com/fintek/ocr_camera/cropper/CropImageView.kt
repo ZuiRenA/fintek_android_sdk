@@ -20,7 +20,7 @@ internal class CropImageView : FrameLayout {
     private var mImageView: ImageView? = null
     private var mCropOverlayView: CropOverlayView? = null
 
-    constructor(context: Context) : super(context) {}
+    constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val inflater = LayoutInflater.from(context)
         val v = inflater.inflate(R.layout.crop_image_view, this, true)

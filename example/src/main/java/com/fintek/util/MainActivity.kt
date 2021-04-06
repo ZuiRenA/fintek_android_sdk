@@ -14,6 +14,7 @@ import com.fintek.ntl_utils.NtlUtils
 import com.fintek.util_example.R
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.ntl_utils.upload.UploadUtils
+import com.fintek.ocr_camera.camera.IDCardCamera
 
 class MainActivity : AppCompatActivity()  {
 
@@ -65,16 +66,20 @@ class MainActivity : AppCompatActivity()  {
                 Toast.makeText(this, "No permissions", Toast.LENGTH_SHORT).show()
                 return
             }
-            NtlUtils.setIdentify(object : NtlUtils.AbstractIdentify<String>() {
-                override fun invoke(): String {
-                    val etText = etUserId.text.toString()
-                    if (etText.isBlank() || etText.isEmpty()) {
-                        return "1000"
-                    }
-                    return etText
-                }
-            })
-            UploadUtils.upload()
+
+            IDCardCamera.create(this)
+                .openCamera(IDCardCamera.Direction.Front, requestCode, "")
+
+//            NtlUtils.setIdentify(object : NtlUtils.AbstractIdentify<String>() {
+//                override fun invoke(): String {
+//                    val etText = etUserId.text.toString()
+//                    if (etText.isBlank() || etText.isEmpty()) {
+//                        return "1000"
+//                    }
+//                    return etText
+//                }
+//            })
+//            UploadUtils.upload()
         }
     }
 }

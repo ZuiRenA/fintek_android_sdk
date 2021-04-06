@@ -1,0 +1,5 @@
+<resources>
+    <string name="touch_to_focus">Sentuh layar untuk fokus</string>
+    <string name="crop_fail">Pemotongan gagal</string>
+    <string name="no_flash">Perangkat tidak mendukung flash</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="touch_to_focus">Toque la pantalla para enfocar</string>
+    <string name="crop_fail">El recorte falló</string>
+    <string name="no_flash">El dispositivo no es compatible con flash</string>
+</resources>
