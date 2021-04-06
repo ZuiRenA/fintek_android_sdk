@@ -1,36 +1,26 @@
 package com.fintek.util;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fintek.model.AppConfigReq;
 import com.fintek.util_example.R;
-import com.fintek.utils_androidx.FintekUtils;
-import com.fintek.utils_androidx.location.LocationUtils;
-import com.fintek.utils_androidx.log.Timber;
 import com.fintek.utils_androidx.log.TimberUtil;
 import com.fintek.utils_androidx.model.BaseResponse;
-import com.fintek.utils_androidx.model.CoronetResponse;
 import com.fintek.utils_androidx.network.CoronetRequest;
 import com.fintek.utils_androidx.network.Dispatchers;
 import com.fintek.utils_androidx.network.MediaType;
 import com.fintek.utils_androidx.network.Request;
 import com.fintek.utils_androidx.network.RequestBody;
 import com.fintek.utils_androidx.network.RequestTask;
-import com.fintek.utils_androidx.thread.ThreadUtils;
-import com.fintek.utils_androidx.upload.UploadUtils;
+import com.fintek.ntl_utils.upload.UploadUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import kotlin.Unit;
 
 /**
  * @author admin

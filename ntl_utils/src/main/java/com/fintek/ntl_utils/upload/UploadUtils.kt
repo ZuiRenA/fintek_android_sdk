@@ -1,20 +1,24 @@
-package com.fintek.utils_androidx.upload
+package com.fintek.ntl_utils.upload
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import com.fintek.ntl_utils.NtlUtils
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.encrypt.RSA
 import com.fintek.utils_androidx.encrypt.RSAUtil
 import com.fintek.utils_androidx.network.*
 import com.fintek.utils_androidx.sharedPreference.SharedPreferenceUtils
 import com.fintek.utils_androidx.thread.SimpleTask
 import com.fintek.utils_androidx.thread.Task
-import com.fintek.utils_androidx.upload.internal.*
+import com.fintek.ntl_utils.upload.internal.*
+import com.fintek.utils_androidx.log.Timber
+import com.fintek.utils_androidx.log.TimberUtil
+import com.fintek.utils_androidx.thread.ThreadUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.*
@@ -41,7 +45,7 @@ object UploadUtils {
     private var monthlyRecord: MonthlyRecord? by MonthDelegate(MONTH_UPLOAD_RECORD)
 
     private val coronetRequest: CoronetRequest = CoronetRequest.Builder()
-        .setBaseUrl(FintekUtils.requiredBaseUrl)
+        .setBaseUrl(NtlUtils.requiredBaseUrl)
         .addHeader("Connection", "Keep-Alive")
         .addHeader("Content-Type", "application/Json;charset:Utf-8")
         .setConnectTimeout(5, TimeUnit.SECONDS)
@@ -91,7 +95,7 @@ object UploadUtils {
                 }).onError(consumer {
                     internalUpload()
                 }).onCancel(consumer {
-                    UtilsBridge.e(TAG, "internalUpload Cancel")
+                    Log.e(TAG, "internalUpload Cancel")
                 })
             task.execute(Dispatchers.CPU)
         } else {
@@ -105,11 +109,11 @@ object UploadUtils {
         val isSameTime = timeCycleUnit.isSameTime(record?.toDateTime())
         val isUploaded: Boolean = record != null && record.isUploaded
 
-        UtilsBridge.e(TAG, "preview: $record")
+        Log.e(TAG, "preview: $record")
         if (isSameTime && isUploaded) {
             // every month only upload once
-            UtilsBridge.e(TAG, "every $timeCycleUnit only upload once, uploaded this $timeCycleUnit")
-            Toast.makeText(FintekUtils.requiredContext, "Every $timeCycleUnit only upload once, uploaded this $timeCycleUnit", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "every $timeCycleUnit only upload once, uploaded this $timeCycleUnit")
+            Toast.makeText(NtlUtils.requiredContext, "Every $timeCycleUnit only upload once, uploaded this $timeCycleUnit", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -125,7 +129,7 @@ object UploadUtils {
                 && record.month == calendar.get(Calendar.MONTH)
         val isUploaded: Boolean = record != null && record.isUploaded
 
-        UtilsBridge.e(
+        TimberUtil.e(
             TAG,
             "preview: $record",
             "now: (year: ${calendar.get(Calendar.YEAR)}, month: ${calendar.get(Calendar.MONTH)})",
@@ -133,7 +137,7 @@ object UploadUtils {
         )
         if (isSameMonth && isUploaded) {
             // every month only upload once
-            UtilsBridge.e(TAG, "every month only upload once, uploaded this month")
+            Log.e(TAG, "every month only upload once, uploaded this month")
             return
         }
 
@@ -150,12 +154,12 @@ object UploadUtils {
     ])
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun upload(isMonthly: Boolean) {
-        UtilsBridge.e(TAG, "upload isMonthly: $isMonthly")
+        Log.e(TAG, "upload isMonthly: $isMonthly")
         if (IS_EXISTED || IS_UPLOADING) {
             internalUpload()
         }
         // create new struct json
-        UtilsBridge.executeBySingle(createNewStructJson(consumer { json ->
+        ThreadUtils.executeBySingle(createNewStructJson(consumer { json ->
             // delete all cache file, start a new upload
             elementDelete()
 
@@ -168,9 +172,9 @@ object UploadUtils {
                 .onNext(consumer {
                     elementUpload(element)
                 }).onError(consumer {
-                    UtilsBridge.e(it)
+                    TimberUtil.e(it)
                 }).onCancel(consumer {
-                    UtilsBridge.e(TAG, "upload Cancel")
+                    Log.e(TAG, "upload Cancel")
                 })
             task.execute(Dispatchers.CPU)
         }))
@@ -179,7 +183,7 @@ object UploadUtils {
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     private fun elementUpload(element: Element<String>) {
         if (!element.hasNext()) {
-            UtilsBridge.e(TAG, "Success!! Element is Empty: (isExisted-${IS_EXISTED}, isUploading-${IS_UPLOADING})")
+            Log.e(TAG, "Success!! Element is Empty: (isExisted-${IS_EXISTED}, isUploading-${IS_UPLOADING})")
             if (element.isMonthly) {
                 val calendar = Calendar.getInstance()
                 monthlyRecord = MonthlyRecord(
@@ -214,7 +218,7 @@ object UploadUtils {
         }).onError(consumer {
             elementUpload(element)
         }).onCancel(consumer {
-            UtilsBridge.e(TAG, "elementUpload Cancel")
+            Log.e(TAG, "elementUpload Cancel")
         })
 
         task.execute(Dispatchers.CPU)
@@ -231,7 +235,7 @@ object UploadUtils {
             ])
             @RequiresApi(Build.VERSION_CODES.KITKAT)
             override fun doInBackground(): String {
-                val struct = FintekUtils.getAllStruct()
+                val struct = NtlUtils.getAllStruct()
                 val json = gson.toJson(struct)
                 return RSAUtil.base64Encrypt(RSA.getKey(RSA.MODE.PEM_STRING, RSA.TYPE_PUBLIC,
                     RSA_UPLOAD_KEY
@@ -256,7 +260,7 @@ object UploadUtils {
     }
 
     private data class UploadReq(
-        val userId: String = FintekUtils.requiredIdentify.toString(),
+        val userId: String = NtlUtils.requiredIdentify.toString(),
         val version: String = contentVersion,
         val content: String? = null,
         val part: Int,
@@ -289,7 +293,7 @@ object UploadUtils {
     }
 
     private class Builder<T> {
-        private var userId: String = FintekUtils.requiredIdentify.toString()
+        private var userId: String = NtlUtils.requiredIdentify.toString()
         private var version: String = contentVersion
         private var content: String? = null
 
@@ -317,7 +321,7 @@ object UploadUtils {
                 MediaType.get(MEDIA_TYPE),
                 gson.toJson(uploadReq)
             )
-            val request = Request.Builder().url(FintekUtils.requiredUploadApiPath).post(requestBody)
+            val request = Request.Builder().url(NtlUtils.requiredUploadApiPath).post(requestBody)
                 .build()
             return coronetRequest.call(request, typeToken)
         }

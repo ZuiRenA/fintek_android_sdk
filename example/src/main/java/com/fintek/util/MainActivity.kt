@@ -1,7 +1,6 @@
 package com.fintek.util
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -11,12 +10,10 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.fintek.ntl_utils.NtlUtils
 import com.fintek.util_example.R
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.encrypt.RSA
-import com.fintek.utils_androidx.encrypt.RSAUtil
-import com.fintek.utils_androidx.log.TimberUtil
-import com.fintek.utils_androidx.upload.UploadUtils
+import com.fintek.ntl_utils.upload.UploadUtils
 
 class MainActivity : AppCompatActivity()  {
 
@@ -68,7 +65,7 @@ class MainActivity : AppCompatActivity()  {
                 Toast.makeText(this, "No permissions", Toast.LENGTH_SHORT).show()
                 return
             }
-            FintekUtils.setIdentify(object : FintekUtils.AbstractIdentify<String>() {
+            NtlUtils.setIdentify(object : NtlUtils.AbstractIdentify<String>() {
                 override fun invoke(): String {
                     val etText = etUserId.text.toString()
                     if (etText.isBlank() || etText.isEmpty()) {
