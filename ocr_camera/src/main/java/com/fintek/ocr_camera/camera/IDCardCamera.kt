@@ -1,6 +1,7 @@
 package com.fintek.ocr_camera.camera
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.Fragment
@@ -21,21 +22,31 @@ class IDCardCamera {
         fun create(fragment: Fragment) = IDCardCamera(fragment)
     }
 
-    private val activityWeak: WeakReference<Activity>
+    private val activityWeakReference: WeakReference<Activity>?
+    private val fragmentWeakReference: WeakReference<Fragment>?
 
-    constructor(fragment: Fragment) : this(fragment.requireActivity())
+    constructor(fragment: Fragment) {
+        fragmentWeakReference = WeakReference(fragment)
+        activityWeakReference = null
+    }
     constructor(activity: Activity) {
-        activityWeak = WeakReference(activity)
+        fragmentWeakReference = null
+        activityWeakReference = WeakReference(activity)
     }
 
     fun openCamera(direction: Direction, requestCode: Int, path: String? = null) {
-        val activity = activityWeak.get()
-        val intent = Intent(activity, OcrCameraActivity::class.java)
+        val intent = Intent(if (fragmentWeakReference != null)
+            fragmentWeakReference.get()?.requireContext()
+        else
+            activityWeakReference?.get(), OcrCameraActivity::class.java)
         intent.putExtra(TAKE_TYPE, direction.direction)
         if (path != null) {
             intent.putExtra(IMAGE_PATH, path)
         }
-        activity?.startActivityForResult(intent, requestCode)
+        if (fragmentWeakReference != null)
+            fragmentWeakReference.get()?.startActivityForResult(intent, requestCode)
+        else
+            activityWeakReference?.get()?.startActivityForResult(intent, requestCode)
     }
 
     sealed class Direction(val direction: Int) {
