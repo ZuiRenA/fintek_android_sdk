@@ -252,7 +252,7 @@ data class Sensor(
 
     @SerializedName("power") val power: String,
 
-    @SerializedName("resolution") val resolution: 1String,
+    @SerializedName("resolution") val resolution: String,
 
     @SerializedName("type") val type: String,
 
