@@ -1,5 +1,7 @@
 package com.fintek.model
 
+import com.fintek.utils_mexico.model.ExtensionModel
+
 /**
  * Created by ChaoShen on 2020/12/2
  */
@@ -16,3 +18,7 @@ data class AppConfigReq(
         object AlertContent : AppConfigTypeEnum("alert_content")
     }
 }
+
+data class UserExtInfoReq(
+    val extInfoReq: ExtensionModel
+)

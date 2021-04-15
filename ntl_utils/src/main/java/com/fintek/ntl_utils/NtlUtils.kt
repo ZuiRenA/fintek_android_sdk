@@ -245,7 +245,7 @@ object NtlUtils {
 
         override fun accept(t: T) {
             identify = t
-            UploadUtils.cycleUpload(TimeCycleUnit.Hour)
+            UploadUtils.cycleUpload(TimeCycleUnit.Day)
         }
     }
 }

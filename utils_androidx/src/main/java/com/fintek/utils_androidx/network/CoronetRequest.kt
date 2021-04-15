@@ -48,9 +48,15 @@ class CoronetRequest {
             }
             request.body?.writeTo(outputStream)
             if (isLogEnable) {
+                val headerList = mutableListOf<String>()
+                headers?.forEach {
+                    headerList.add("${it.first} : ${it.second}")
+                }
+
                 TimberUtil.e(
                     "${request.method}: $baseUrl${request.url}",
                     request.body.toString(),
+                    *headerList.toTypedArray(),
                     "body: ${request.body?.getBytes()?.decodeToString()}"
                 )
             }
