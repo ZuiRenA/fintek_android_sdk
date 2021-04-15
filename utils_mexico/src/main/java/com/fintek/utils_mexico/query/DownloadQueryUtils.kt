@@ -11,10 +11,9 @@ import java.io.File
  * Created by ChaoShen on 2021/4/15
  */
 object DownloadQueryUtils {
-    private val downloadManager = FintekMexicoUtils.requiredApplication.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-
     /**
      * path /mnt/sdcard/Download
+     * Get download file in this path, will not deep get file count
      */
     @JvmStatic
     fun getDownloadFileCount(): Int = catchOrZero {

@@ -20,6 +20,7 @@ import com.fintek.utils_androidx.log.Timber
 import com.fintek.utils_androidx.log.TimberUtil
 import com.fintek.utils_androidx.thread.ThreadUtils
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -323,7 +324,11 @@ object UploadUtils {
             )
             val request = Request.Builder().url(NtlUtils.requiredUploadApiPath).post(requestBody)
                 .build()
-            return coronetRequest.call(request, typeToken)
+            return coronetRequest.call(request, object : Convert<String, T> {
+                override fun convert(from: String): T = GsonBuilder().enableComplexMapKeySerialization()
+                    .create()
+                    .fromJson(from, typeToken.type)
+            })
         }
     }
 }

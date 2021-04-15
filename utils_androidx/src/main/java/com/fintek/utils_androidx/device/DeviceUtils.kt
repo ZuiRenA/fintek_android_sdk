@@ -234,4 +234,14 @@ object DeviceUtils {
         }
         return false
     }
+
+    /**
+     * Return Whether the developer debugging mode has been turned on
+     * @return Whether the developer debugging mode has been turned on
+     */
+    @JvmStatic
+    fun isEnableAdb(): Boolean {
+       return Settings.Secure.getInt(FintekUtils.requiredContext.contentResolver,
+           Settings.Secure.ADB_ENABLED, 0) > 0
+    }
 }

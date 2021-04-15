@@ -9,6 +9,7 @@ import com.fintek.model.UserExtInfoReq;
 import com.fintek.util_example.R;
 import com.fintek.utils_androidx.log.TimberUtil;
 import com.fintek.utils_androidx.model.BaseResponse;
+import com.fintek.utils_androidx.network.Convert;
 import com.fintek.utils_androidx.network.CoronetRequest;
 import com.fintek.utils_androidx.network.Dispatchers;
 import com.fintek.utils_androidx.network.MediaType;
@@ -19,8 +20,14 @@ import com.fintek.ntl_utils.upload.UploadUtils;
 import com.fintek.utils_mexico.FintekMexicoUtils;
 import com.fintek.utils_mexico.model.ExtensionModel;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +68,17 @@ public class MainJavaActivity extends AppCompatActivity {
 
         RequestTask<BaseResponse<Void>> task = request.call(new Request.Builder()
                 .url("/api/auth/ext-info")
-                .post(requestBody).build(), new TypeToken<BaseResponse<Void>>(){});
+                .post(requestBody).build(), s -> {
+                    try {
+                        ParameterizedType types = Types.newParameterizedType(BaseResponse.class, Void.class);
+                        JsonAdapter<BaseResponse<Void>> adapter = new Moshi.Builder().build()
+                                .adapter(types);
+                        return adapter.fromJson(s);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                });
 
         task.onNext(TimberUtil::e)
                 .onError(TimberUtil::e)

@@ -2,10 +2,9 @@ package com.fintek.utils_mexico
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.media.Image
 import android.os.Build
+import android.os.SystemClock
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.`package`.PackageUtils
 import com.fintek.utils_androidx.app.AppUtils
 import com.fintek.utils_androidx.device.DeviceUtils
 import com.fintek.utils_androidx.hardware.HardwareUtils
@@ -13,7 +12,8 @@ import com.fintek.utils_androidx.mac.MacUtils
 import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_androidx.phone.PhoneUtils
 import com.fintek.utils_androidx.storage.RuntimeMemoryUtils
-import com.fintek.utils_androidx.storage.StorageUtils
+import com.fintek.utils_mexico.battery.BatteryMexicoUtils
+import com.fintek.utils_mexico.device.DeviceMexicoUtils
 import com.fintek.utils_mexico.model.*
 import com.fintek.utils_mexico.query.AudioQueryUtils
 import com.fintek.utils_mexico.query.DownloadQueryUtils
@@ -27,6 +27,7 @@ import com.fintek.utils_mexico.storage.StorageMexicoUtils
  */
 object FintekMexicoUtils {
     private var application: Application? = null
+    private var gaid: String = ""
 
     internal val requiredApplication: Application get() = requireNotNull(application) {
         "FintekMexicoUtils must init first, please use FintekMexicoUtils.init(Application application)"
@@ -36,6 +37,11 @@ object FintekMexicoUtils {
     fun init(application: Application) = apply {
         this.application = application
         FintekUtils.init(application)
+        DeviceUtils.getGaid(object : FintekUtils.Consumer<String> {
+            override fun accept(t: String) {
+                gaid = t
+            }
+        })
     }
 
     fun getTemp() = ExtensionModel(
@@ -54,8 +60,8 @@ object FintekMexicoUtils {
         albs = "",
         audioExternal = AudioQueryUtils.getExternalAudioCount(),
         audioInternal = AudioQueryUtils.getInternalAudioCount(),
-        batteryStatus = getTempBatteryStatus(),
-        generalData = getTempGeneralData(),
+        batteryStatus = getBatteryStatus(),
+        generalData = getGeneralData(),
         hardware = getTempHardware(),
         network = getTempNetwork(),
         otherData = getTempOtherData(),
@@ -101,23 +107,23 @@ object FintekMexicoUtils {
         brand = HardwareUtils.getBrand(),
     )
 
-    private fun getTempBatteryStatus() = BatteryStatus(
-        batteryLevel = "2700",
-        batteryMax = "3600",
-        batteryPercent = 75,
-        isAcCharge = 0,
-        isCharging = 1,
-        isUsbCharge = 1
+    private fun getBatteryStatus() = BatteryStatus(
+        batteryLevel = BatteryMexicoUtils.getBatteryRemainder(),
+        batteryMax = BatteryMexicoUtils.getBatteryCapacity(),
+        batteryPercent = BatteryMexicoUtils.getPercent(),
+        isAcCharge = BatteryMexicoUtils.isAcCharging(),
+        isCharging = BatteryMexicoUtils.isCharging(),
+        isUsbCharge = BatteryMexicoUtils.isUsbCharging()
     )
 
     @SuppressLint("MissingPermission", "NewApi")
-    private fun getTempGeneralData() = GeneralData(
+    private fun getGeneralData() = GeneralData(
         androidId = DeviceUtils.getAndroidId(),
-        currentSystemTime = 123131,
-        elapsedRealtime = 122112331,
-        gaid = "",
-        imei = DeviceUtils.getImei() ?: "",
-        isUsbDebug = "0",
+        currentSystemTime = System.currentTimeMillis(),
+        elapsedRealtime = SystemClock.elapsedRealtime(),
+        gaid = gaid,
+        imei = DeviceUtils.getImei().orEmpty(),
+        isUsbDebug = DeviceMexicoUtils.isEnableAdb(),
         isUsingProxyPort = "0",
         isUsingVpn = "0",
         language = "zho",

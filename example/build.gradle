@@ -95,4 +95,6 @@ dependencies {
     implementation project(":utils_mexico")
 
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation "com.squareup.moshi:moshi:1.11.0"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.11.0"
 }

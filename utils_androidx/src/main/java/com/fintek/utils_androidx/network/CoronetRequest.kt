@@ -1,11 +1,7 @@
 package com.fintek.utils_androidx.network
 
-import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.log.TimberUtil
-import com.fintek.utils_androidx.model.BaseResponse
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -27,7 +23,7 @@ class CoronetRequest {
     private var connectTimeout: Long = 60000 //default millisecond
     private var readTimeout: Long = 60000 //default millisecond
 
-    fun <T> call(request: Request, typeToken: TypeToken<T>) : RequestTask<T> = RequestTask {
+    fun <T> call(request: Request, convert: Convert<String, T>) : RequestTask<T> = RequestTask {
         val resultStr: String = call(request.url) {
             requestMethod = request.method
             if (requestMethod == "POST") {
@@ -69,9 +65,7 @@ class CoronetRequest {
             )
         }
 
-        GsonBuilder().enableComplexMapKeySerialization()
-            .create()
-            .fromJson(resultStr, typeToken.type)
+        convert.convert(resultStr)
     }
 
     private fun call(url: String, init: HttpURLConnection.() -> Unit): String {
