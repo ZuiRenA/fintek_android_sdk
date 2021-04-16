@@ -1,6 +1,8 @@
 package com.fintek.model
 
 import com.fintek.utils_mexico.model.ExtensionModel
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 /**
  * Created by ChaoShen on 2020/12/2
@@ -18,6 +20,14 @@ data class AppConfigReq(
         object AlertContent : AppConfigTypeEnum("alert_content")
     }
 }
+
+@JsonClass(generateAdapter = true)
+data class BaseResponse<T> (
+    val code: String? = null,
+    val message: String? = null,
+    val time: String? = null,
+    val data: T? = null
+)
 
 data class UserExtInfoReq(
     val extInfoReq: ExtensionModel

@@ -1,5 +1,6 @@
 package com.fintek.utils_androidx.battery
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -19,8 +20,8 @@ object BatteryUtils {
     /**
      * Return battery percent
      */
+    @SuppressLint("NewApi")
     @JvmStatic
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun getPercent(): Int {
         return batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1
     }

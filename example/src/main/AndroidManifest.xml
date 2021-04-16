@@ -13,7 +13,8 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
 
     
     <application
@@ -27,13 +28,13 @@
         tools:overrideLibrary="com.stu.lon">
         <activity android:name="com.fintek.util.MainJavaActivity">
 
+        </activity>
+        <activity android:name="com.fintek.util.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name="com.fintek.util.MainActivity">
 
         </activity>
     </application>

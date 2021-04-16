@@ -9,4 +9,10 @@ object DeviceMexicoUtils {
 
     @JvmStatic
     fun isEnableAdb(): String = if (DeviceUtils.isEnableAdb()) "1" else "0"
+
+    @JvmStatic
+    fun isRoot(): Int = if (DeviceUtils.isRoot()) 1 else 0
+
+    @JvmStatic
+    fun isSimulator(): Int = if (DeviceUtils.isProbablyRunningOnEmulator()) 1 else 0
 }

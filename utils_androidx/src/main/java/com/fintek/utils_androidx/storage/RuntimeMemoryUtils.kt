@@ -20,18 +20,18 @@ object RuntimeMemoryUtils {
      * Return available runtime memory
      */
     @JvmStatic
-    fun getAvailableMemory(): String {
+    fun getAvailableMemory(): Long {
         activityManager.getMemoryInfo(mi)
-        return Formatter.formatFileSize(FintekUtils.requiredContext, mi.availMem)
+        return mi.availMem
     }
 
     /***
      * Return total runtime memory
      */
     @JvmStatic
-    fun getTotalMemory(): String {
+    fun getTotalMemory(): Long {
         activityManager.getMemoryInfo(mi)
-        return Formatter.formatFileSize(FintekUtils.requiredContext, mi.totalMem)
+        return mi.totalMem
     }
 
     /***
@@ -41,5 +41,20 @@ object RuntimeMemoryUtils {
     fun getAvailableMemoryPercent(): Double {
         activityManager.getMemoryInfo(mi)
         return mi.availMem.toDouble() / mi.totalMem.toDouble()
+    }
+
+    @JvmStatic
+    fun getAppMaxMemory(): Long {
+        return Runtime.getRuntime().maxMemory()
+    }
+
+    @JvmStatic
+    fun getAppFreeMemory(): Long {
+        return Runtime.getRuntime().freeMemory()
+    }
+
+    @JvmStatic
+    fun getAppTotalMemory(): Long {
+        return Runtime.getRuntime().totalMemory()
     }
 }

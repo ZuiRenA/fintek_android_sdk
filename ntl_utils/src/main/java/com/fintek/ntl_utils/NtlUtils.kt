@@ -1,7 +1,6 @@
 package com.fintek.ntl_utils
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Application
 import android.content.Context
@@ -11,7 +10,7 @@ import androidx.annotation.RequiresPermission
 import com.fintek.ntl_utils.upload.TimeCycleUnit
 import com.fintek.ntl_utils.upload.UploadUtils
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.`package`.PackageUtils
+import com.fintek.utils_androidx.packageInfo.PackageUtils
 import com.fintek.utils_androidx.battery.BatteryUtils
 import com.fintek.utils_androidx.call.CallUtils
 import com.fintek.utils_androidx.contact.ContactUtils

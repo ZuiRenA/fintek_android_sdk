@@ -6,6 +6,8 @@ import android.graphics.Point
 import android.os.Build
 import android.view.WindowManager
 import com.fintek.utils_androidx.FintekUtils
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Created by ChaoShen on 2020/11/18
@@ -21,6 +23,15 @@ object HardwareUtils {
      */
     @JvmStatic
     fun getModel(): String = Build.MODEL.trim { it <= ' ' }.replace("\\s*".toRegex(), "")
+
+    /**
+     * Return the board of device
+     *
+     * e.g.
+     * @return the board of device
+     */
+    @JvmStatic
+    fun getBoard(): String = if (Build.BOARD != Build.UNKNOWN) Build.BOARD else ""
 
 
     /**
@@ -108,6 +119,19 @@ object HardwareUtils {
     fun getPhysicalHeight(): Int {
         val point = getPhysicalPoint() ?: return -1
         return point.y
+    }
+
+    /**
+     * Return device inch
+     * @return inch
+     */
+    @JvmStatic
+    fun getPhysicalInch(): Float {
+        val dm = FintekUtils.requiredContext.resources.displayMetrics
+        val density = dm.density * 160
+        val x = (dm.widthPixels / density).pow(2)
+        val y = (dm.heightPixels / density).pow(2)
+        return sqrt(x + y)
     }
 
     /**

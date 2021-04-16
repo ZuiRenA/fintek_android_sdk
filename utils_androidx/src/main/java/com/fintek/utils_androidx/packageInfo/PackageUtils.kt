@@ -1,4 +1,4 @@
-package com.fintek.utils_androidx.`package`
+package com.fintek.utils_androidx.packageInfo
 
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.model.PackageInfo

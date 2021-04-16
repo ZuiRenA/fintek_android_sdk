@@ -17,4 +17,11 @@ object StorageMexicoUtils {
         val totalSize = StorageUtils.getTotalSizeRepaired()
         return Formatter.formatFileSize(FintekMexicoUtils.requiredApplication, totalSize)
     }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @JvmStatic
+    fun getUnuseStorageSize(): String {
+        val unuseStorageSize = StorageUtils.getTotalSizeRepaired() - StorageUtils.getUsedSizeRepaired()
+        return Formatter.formatFileSize(FintekMexicoUtils.requiredApplication, unuseStorageSize)
+    }
 }

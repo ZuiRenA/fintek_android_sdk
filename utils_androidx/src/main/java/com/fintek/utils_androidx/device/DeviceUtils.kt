@@ -2,10 +2,12 @@ package com.fintek.utils_androidx.device
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
-import android.telephony.TelephonyManager
+import android.telephony.*
+import android.view.InputDevice
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
@@ -15,6 +17,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import java.io.File
 import java.io.IOException
+import java.lang.reflect.Method
 import java.util.*
 
 
@@ -92,8 +95,8 @@ object DeviceUtils {
      * @return the IMEI (International Mobile Equipment Identity). Return null if IMEI is not
      * available.
      */
+    @SuppressLint("NewApi")
     @JvmStatic // No support for device / profile owner or carrier privileges (b/72967236).
-    @RequiresApi(Build.VERSION_CODES.O)
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     fun getImei(): String? = try {
         telephonyManager?.imei
@@ -243,5 +246,115 @@ object DeviceUtils {
     fun isEnableAdb(): Boolean {
        return Settings.Secure.getInt(FintekUtils.requiredContext.contentResolver,
            Settings.Secure.ADB_ENABLED, 0) > 0
+    }
+
+    /**
+     * Return device name
+     *
+     * - api >= 25 Use [Settings.Global.getString] to get device name, if null get bluetooth_name else Model
+     * - otherwise use [BluetoothAdapter.getName]
+     *
+     * @return device name
+     */
+    @JvmStatic
+    fun getDeviceName(): String {
+        return Settings.System.getString(FintekUtils.requiredContext.contentResolver, "device_name")
+            ?: Settings.Secure.getString(FintekUtils.requiredContext.contentResolver, "bluetooth_name")
+            ?: Build.MODEL
+    }
+
+    /**
+     * Get the signal strength as dBm.
+     * @return signal strength Unit: dBm
+     */
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @JvmStatic
+    fun getMobileDbm(): Int {
+        val cellInfoList = telephonyManager?.allCellInfo ?: return -1
+        var dbm = -1
+        cellInfoList.forEach {
+            when(it) {
+                is CellInfoGsm -> {
+                    val cellSignalStrengthGsm = it.cellSignalStrength
+                    dbm = cellSignalStrengthGsm.dbm
+                }
+
+                is CellInfoCdma -> {
+                    val cellSignalStrengthCdma = it.cellSignalStrength
+                    dbm = cellSignalStrengthCdma.dbm
+                }
+
+                is CellInfoWcdma -> {
+                    val cellSignalStrengthWcdma = it.cellSignalStrength
+                    dbm = cellSignalStrengthWcdma.dbm
+                }
+
+                is CellInfoLte -> {
+                    val cellSignalStrengthLte = it.cellSignalStrength
+                    dbm = cellSignalStrengthLte.dbm
+                }
+            }
+        }
+        return dbm
+    }
+
+    /**
+     * Get current keyboard type
+     * @return current keyboard type
+     */
+    fun getCurrentKeyboardType(): Int {
+        val inputDevices: List<InputDevice> = InputDevice.getDeviceIds().map {
+            InputDevice.getDevice(it)
+        }
+
+        val firstNotVirtual = inputDevices.firstOrNull { !it.isVirtual }
+        return firstNotVirtual?.keyboardType ?: 0
+    }
+
+    /**
+     * Return is simulator
+     * @return isSimulator
+     */
+    @JvmStatic
+    fun isProbablyRunningOnEmulator(): Boolean {
+        if (isProbablyRunningOnEmulator != null) {
+           return requireNotNull(isProbablyRunningOnEmulator)
+        }
+        // Android SDK emulator
+        val result = ((Build.FINGERPRINT.startsWith("google/sdk_gphone_")
+                && Build.FINGERPRINT.endsWith(":user/release-keys")
+                && Build.MANUFACTURER == "Google" && Build.PRODUCT.startsWith("sdk_gphone_") && Build.BRAND == "google"
+                && Build.MODEL.startsWith("sdk_gphone_"))
+                //
+                || Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.startsWith("unknown")
+                || Build.MODEL.contains("google_sdk")
+                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for x86")
+                //bluestacks
+                || "QC_Reference_Phone" == Build.BOARD && !"Xiaomi".equals(Build.MANUFACTURER, ignoreCase = true) //bluestacks
+                || Build.MANUFACTURER.contains("Genymotion")
+                || Build.HOST=="Build2" //MSI App Player
+                || Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")
+                || Build.PRODUCT == "google_sdk"
+                // another Android SDK emulator check
+                || hookSystemPropertiesSimulator())
+        isProbablyRunningOnEmulator = result
+        return result
+    }
+
+    private var isProbablyRunningOnEmulator: Boolean? = null
+
+    @SuppressLint("PrivateApi")
+    private fun hookSystemPropertiesSimulator(): Boolean = try {
+        val classLoader = FintekUtils.requiredContext.classLoader
+        val systemProperties = classLoader.loadClass("android.os.SystemProperties")
+        val method = systemProperties.getMethod("get", String::class.java)
+        val result = method.invoke(systemProperties, "ro.kernel.qemu") as String
+        result == "1"
+    } catch (e: Exception) {
+        false
+    } catch (t: Throwable) {
+        false
     }
 }

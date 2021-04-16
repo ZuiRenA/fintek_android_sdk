@@ -12,13 +12,13 @@ import com.fintek.utils_mexico.ext.catchOrZero
 object AudioQueryUtils {
 
     @JvmStatic
-    @RequiresApi(Build.VERSION_CODES.O)
     fun getExternalAudioCount(): Int = catchOrZero {
         ContentQueryUtils.countQuery(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         )
     }
 
+    @JvmStatic
     fun getInternalAudioCount(): Int = catchOrZero {
         ContentQueryUtils.countQuery(
             MediaStore.Audio.Media.INTERNAL_CONTENT_URI

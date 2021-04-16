@@ -378,4 +378,18 @@ object StorageUtils {
 
         return (blockSize * blockCount).toString() + DISTINGUISH + blockSize * availableCount
     }
+
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun internalTotalStorageSize(): Long {
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.blockCountLong * stat.blockSizeLong
+    }
+
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    fun internalAvailableStorageSize(): Long {
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.availableBlocksLong * stat.blockSizeLong
+    }
 }

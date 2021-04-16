@@ -897,4 +897,32 @@ object NetworkUtils {
         }
         return ""
     }
+
+    /**
+     * Is use proxy to internet
+     * @return whether use proxy to connect internet
+     */
+    @JvmStatic
+    fun isWifiProxy(): Boolean {
+        val proxyAddress = System.getProperty("http.proxyHost")
+        val portStr = System.getProperty("http.proxyPort") ?: "-1"
+        val proxyPort = portStr.toInt()
+        return !proxyAddress.isNullOrEmpty() && proxyPort != -1
+    }
+
+    @JvmStatic
+    fun isEnableVpn(): Boolean = try {
+        val all = Collections.list(NetworkInterface.getNetworkInterfaces())
+        var isEnableVpn = false
+        all.forEach {
+            if (it.name == "tun0" || it.name == "ppp0") {
+                isEnableVpn = true
+            }
+        }
+        isEnableVpn
+    } catch (e: Exception) {
+        false
+    } catch (e: Throwable) {
+        false
+    }
 }

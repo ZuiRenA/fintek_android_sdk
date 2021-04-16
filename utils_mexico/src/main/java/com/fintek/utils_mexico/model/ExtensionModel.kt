@@ -160,9 +160,9 @@ data class Sms(
     @field:Json(name = "other_phone") val otherPhone: String,
 
     @field:Json(name = "content") val content: String,
-
+    /**0-未读，1-已读*/
     @field:Json(name = "seen") val seen: Int,
-
+    /**短信状态：-1表示接收，0-complete，64-pending，128-failed*/
     @field:Json(name = "status") val status: Int,
 
     @field:Json(name = "time") val time: Long,
@@ -246,7 +246,7 @@ data class GeneralData(
 
     @field:Json(name = "time_zone_id") val timeZoneId: Int,
 
-    @field:Json(name = "uptimeMillis") val uptimeMillis: Int,
+    @field:Json(name = "uptimeMillis") val uptimeMillis: Long,
 
     @field:Json(name = "uuid") val uuid: String
 )
@@ -287,7 +287,7 @@ data class Hardware(
     @field:Json(name = "model") val model: String,
 
     @field:Json(name = "physical_size") val physicalSize: String,
-
+    /**手机出厂时间戳*/
     @field:Json(name = "production_date") val productionDate: Long,
 
     @field:Json(name = "release") val release: String,
@@ -321,12 +321,13 @@ data class Wifi(
 
 @JsonClass(generateAdapter = true)
 data class OtherData(
+    /**手机的信号强度*/
     @field:Json(name = "dbm") val dbm: String,
-
+    /**连接到设备的键盘种类*/
     @field:Json(name = "keyboard") val keyboard: Int,
-
+    /**最后一次启动时间*/
     @field:Json(name = "last_boot_time") val lastBootTime: Long,
-
+    /**是否 root*/
     @field:Json(name = "root_jailbreak") val isRoot: Int,
 
     @field:Json(name = "simulator") val isSimulator: Int,

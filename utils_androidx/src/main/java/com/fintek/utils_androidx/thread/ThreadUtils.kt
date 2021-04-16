@@ -31,6 +31,9 @@ object ThreadUtils {
     fun getMainHandler() = HANDLER
 
     @JvmStatic
+    fun getCpuCount(): Int = CPU_COUNT
+
+    @JvmStatic
     fun runOnUiThread(runnable: Runnable) {
         if (isMainThread) runnable.run()
         else HANDLER.post(runnable)

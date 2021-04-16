@@ -8,9 +8,9 @@ import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.text.format.Formatter
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import com.fintek.utils_androidx.FintekUtils
 import java.io.File
-import java.lang.reflect.Array
 import java.lang.reflect.InvocationTargetException
 import java.util.ArrayList
 
@@ -18,6 +18,9 @@ import java.util.ArrayList
  * Created by ChaoShen on 2020/11/10
  */
 object SDCardUtils {
+    private val sdCardContainList = arrayOf("sdcard", "SdCard", "sdCard")
+    private const val EXTRA_SD_PATH = "extra"
+
     /**
      * Return whether sdcard is enabled by environment.
      *
@@ -26,6 +29,19 @@ object SDCardUtils {
     @JvmStatic
     fun isSDCardEnableByEnvironment(): Boolean {
         return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
+    }
+
+    @JvmStatic
+    fun isSDCardExtra(): Boolean {
+        val appsDir = ContextCompat.getExternalFilesDirs(FintekUtils.requiredContext, null)
+        var containExtraSd = false
+        appsDir.forEach {
+            if (it.path.contains(EXTRA_SD_PATH)) {
+                containExtraSd = true
+                return@forEach
+            }
+        }
+        return containExtraSd
     }
 
     @JvmStatic
@@ -149,9 +165,9 @@ object SDCardUtils {
                 val getVolumeListMethod =
                     StorageManager::class.java.getMethod("getVolumeList")
                 val result = getVolumeListMethod.invoke(sm)
-                val length = Array.getLength(result)
+                val length = java.lang.reflect.Array.getLength(result)
                 for (i in 0 until length) {
-                    val storageVolumeElement = Array.get(result, i)
+                    val storageVolumeElement = java.lang.reflect.Array.get(result, i)
                     val path =
                         getPathMethod.invoke(storageVolumeElement) as String
                     val isRemovable =
