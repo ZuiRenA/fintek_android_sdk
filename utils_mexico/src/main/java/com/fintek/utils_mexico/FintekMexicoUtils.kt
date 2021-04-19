@@ -131,7 +131,7 @@ object FintekMexicoUtils {
     fun getDeviceInfo(): DeviceInfo {
         val data = locationUtils.getLocationData()
         return DeviceInfo(
-            albs = AlbsUtils.getAlbs(),
+            albs = "",
             audioExternal = AudioQueryUtils.getExternalAudioCount(),
             audioInternal = AudioQueryUtils.getInternalAudioCount(),
             batteryStatus = getBatteryStatus(),

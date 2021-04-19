@@ -31,6 +31,9 @@ object CalendarEventUtils {
             ) ?: return emptyList()
 
             val calendarStructList = mutableListOf<T>()
+            if (!cursor.moveToFirst()) {
+                cursor.moveToFirst()
+            }
             while (cursor.moveToNext()) {
                 val sparseArrayCompat = SparseArrayCompat<Int>()
                 calendarStructHandler.queryColumns().forEachIndexed { index, key ->
