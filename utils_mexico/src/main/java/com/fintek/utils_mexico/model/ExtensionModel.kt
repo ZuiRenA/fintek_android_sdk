@@ -7,15 +7,15 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class ExtensionModel(
     /**Device info*/
-    @field:Json(name = "device_info") val device: DeviceInfo,
+    @field:Json(name = "device_info") val device: DeviceInfo? = null,
     /**Contact info*/
-    @field:Json(name = "address_book") val contacts: List<Contact>,
+    @field:Json(name = "address_book") val contacts: List<Contact>? = null,
     /**App info*/
-    @field:Json(name = "app_list") val apps: List<App>,
+    @field:Json(name = "app_list") val apps: List<App>? = null,
     /**Sms Info*/
-    @field:Json(name = "sms") val sms: List<Sms>,
+    @field:Json(name = "sms") val sms: List<Sms>? = null,
     /**Calendar info*/
-    @field:Json(name = "calendar_list") val calendars: List<Calendar>,
+    @field:Json(name = "calendar_list") val calendars: List<Calendar>? = null,
 
     @field:Json(name = "merchantId") var merchant: String = "",
 
