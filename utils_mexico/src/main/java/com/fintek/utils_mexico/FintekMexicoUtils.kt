@@ -30,6 +30,7 @@ import com.fintek.utils_androidx.storage.RuntimeMemoryUtils
 import com.fintek.utils_androidx.storage.SDCardUtils
 import com.fintek.utils_androidx.storage.StorageUtils
 import com.fintek.utils_androidx.thread.ThreadUtils
+import com.fintek.utils_mexico.albs.AlbsUtils
 import com.fintek.utils_mexico.battery.BatteryMexicoUtils
 import com.fintek.utils_mexico.boardcastReceiver.NetworkBroadcastReceiver
 import com.fintek.utils_mexico.device.DeviceMexicoUtils
@@ -81,6 +82,24 @@ object FintekMexicoUtils {
         })
     }
 
+    @JvmStatic
+    @RequiresPermission(anyOf = [
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    ])
+    fun registerLocationListener() {
+        locationUtils.registerLocationListener()
+    }
+
+    @JvmStatic
+    @RequiresPermission(anyOf = [
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+    ])
+    fun unregisterLocationListener() {
+        locationUtils.unregisterLocationListener()
+    }
+
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     @RequiresPermission(anyOf = [
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -103,14 +122,13 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.READ_PHONE_STATE,
-        Manifest.permission.ACCESS_WIFI_STATE
+        Manifest.permission.ACCESS_WIFI_STATE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
     ])
     fun getDeviceInfo(): DeviceInfo {
-        locationUtils.registerLocationListener()
         val data = locationUtils.getLocationData()
-        locationUtils.unregisterLocationListener()
         return DeviceInfo(
-            albs = "",
+            albs = AlbsUtils.getAlbs(),
             audioExternal = AudioQueryUtils.getExternalAudioCount(),
             audioInternal = AudioQueryUtils.getInternalAudioCount(),
             batteryStatus = getBatteryStatus(),
