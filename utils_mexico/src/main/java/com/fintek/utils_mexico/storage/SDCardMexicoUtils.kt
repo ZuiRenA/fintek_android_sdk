@@ -68,7 +68,7 @@ object SDCardMexicoUtils {
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun getAvailableSize(): Long {
-        var availableSize = getAvailableSize()
+        var availableSize = SDCardUtils.getAvailableSize()
         if (availableSize == 0L) {
             availableSize = -1
         }

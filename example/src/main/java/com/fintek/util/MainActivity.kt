@@ -76,19 +76,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-
-
-        ThreadUtils.executeByCpu(object : SimpleTask<String>() {
-            @SuppressLint("MissingPermission")
-            override fun doInBackground(): String {
-                val deviceMexico = getExtension()
-                val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())
-                return adapter.toJson(deviceMexico)
-            }
-
-            override fun onSuccess(result: String) {
-                TimberUtil.i(result)
-            }
-        })
+        FintekMexicoUtils.registerLocationListener()
+        val deviceMexico = getExtension()
+        val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())
+        val json = adapter.toJson(deviceMexico)
+        FintekMexicoUtils.unregisterLocationListener()
     }
 }
