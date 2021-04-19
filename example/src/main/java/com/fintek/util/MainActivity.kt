@@ -76,6 +76,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        val deviceInfoHandler = DeviceInfoHandler.getDeviceInfo()
+
         FintekMexicoUtils.registerLocationListener()
         val deviceMexico = getExtension()
         val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())

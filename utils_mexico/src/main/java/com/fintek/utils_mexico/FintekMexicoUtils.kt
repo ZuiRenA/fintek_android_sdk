@@ -323,7 +323,7 @@ object FintekMexicoUtils {
         memoryCardFreeSize = SDCardMexicoUtils.getSDCardFreeSize(),
         memoryCardUsedSize = SDCardMexicoUtils.getUsedSize(),
         memoryCardUsableSize = SDCardMexicoUtils.getAvailableSize(),
-        ramTotalSize = StorageUtils.getTotalSizeRepaired().toString(),
-        ramUsableSize = StorageUtils.getUsedSizeRepaired().toString()
+        ramTotalSize = RuntimeMemoryUtils.getTotalMemory().toString(),
+        ramUsableSize = RuntimeMemoryUtils.getAvailableMemory().toString()
     )
 }

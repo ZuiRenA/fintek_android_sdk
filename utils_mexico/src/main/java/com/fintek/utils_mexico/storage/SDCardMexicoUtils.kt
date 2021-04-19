@@ -1,8 +1,11 @@
 package com.fintek.utils_mexico.storage
 
 import android.os.Build
+import android.os.Environment
+import android.os.StatFs
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.storage.SDCardUtils
+import com.fintek.utils_mexico.FintekMexicoUtils
 
 /**
  * Created by ChaoShen on 2021/4/16
@@ -42,7 +45,8 @@ object SDCardMexicoUtils {
         if (totalSize == 0L) {
             totalSize = -1
         }
-        return totalSize
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.blockCountLong * stat.blockSizeLong
     }
 
     @JvmStatic
@@ -52,7 +56,8 @@ object SDCardMexicoUtils {
         if (freeSize == 0L) {
             freeSize = -1
         }
-        return freeSize
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.freeBlocksLong * stat.blockSizeLong
     }
 
     @JvmStatic
@@ -62,7 +67,8 @@ object SDCardMexicoUtils {
         if (usedSize == 0L) {
             usedSize = -1
         }
-        return usedSize
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.blockCountLong * stat.blockSizeLong - stat.availableBlocksLong * stat.blockSizeLong
     }
 
     @JvmStatic
@@ -72,6 +78,7 @@ object SDCardMexicoUtils {
         if (availableSize == 0L) {
             availableSize = -1
         }
-        return availableSize
+        val stat = StatFs(Environment.getExternalStorageDirectory().path)
+        return stat.availableBlocksLong * stat.blockSizeLong
     }
 }
