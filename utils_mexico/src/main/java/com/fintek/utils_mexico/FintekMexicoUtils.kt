@@ -99,7 +99,7 @@ object FintekMexicoUtils {
     fun unregisterLocationListener() {
         locationUtils.unregisterLocationListener()
     }
-    
+
     fun fetchLocationData() = locationUtils.getLocationData()
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
@@ -110,6 +110,7 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_WIFI_STATE,
         Manifest.permission.READ_CONTACTS,
         Manifest.permission.READ_CALENDAR,
+        Manifest.permission.READ_SMS
     ])
     fun getExtension() = ExtensionModel(
         device = getDeviceInfo(),
@@ -130,7 +131,7 @@ object FintekMexicoUtils {
     fun getDeviceInfo(): DeviceInfo {
         val data = locationUtils.getLocationData()
         return DeviceInfo(
-            albs = AlbsUtils.getAlbs(),
+            albs = "",
             audioExternal = AudioQueryUtils.getExternalAudioCount(),
             audioInternal = AudioQueryUtils.getInternalAudioCount(),
             batteryStatus = getBatteryStatus(),

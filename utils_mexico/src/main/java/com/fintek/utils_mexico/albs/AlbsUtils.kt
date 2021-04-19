@@ -2,11 +2,15 @@ package com.fintek.utils_mexico.albs
 
 import android.Manifest
 import androidx.annotation.RequiresPermission
+import androidx.exifinterface.media.ExifInterface
 import com.fintek.utils_androidx.image.ImageUtils
-import com.fintek.utils_androidx.model.ImageInfo
-import com.squareup.moshi.JsonAdapter
+import com.fintek.utils_androidx.image.ImageUtils.getExifInterface
+import com.fintek.utils_androidx.image.ImageUtils.getImageParams
+import com.fintek.utils_mexico.model.ImageInfo
+import com.fintek.utils_mexico.structHandler.ImageMexicoStructHandler
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import java.io.File
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -23,8 +27,9 @@ object AlbsUtils {
     }
 
     @RequiresPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-    private fun getImageList(): List<ImageInfo> {
-        val imagePathList = ImageUtils.getImageList()
-        return imagePathList.mapNotNull { ImageUtils.getImageParams(it) }
+    fun getImageList(): List<ImageInfo> {
+        return ImageUtils.getImageList().asSequence().mapNotNull {
+            it.getExifInterface()?.getImageParams(ImageMexicoStructHandler(it))
+        }.toList()
     }
 }

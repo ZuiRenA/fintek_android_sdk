@@ -1,5 +1,7 @@
 package com.fintek.utils_mexico.model
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -373,3 +375,41 @@ data class Reminder(
     @field:Json(name = "reminder_id") val reminderId: Int,
 )
 
+@JsonClass(generateAdapter = true)
+data class ImageInfo(
+    var name: String = "",
+
+    var height: String = "",
+
+    var width: String = "",
+
+    var author: String = "",
+    /**
+     * latitude，e.g. 31.2377 or 0.0 or null
+     */
+    var latitude: Float? = null,
+
+    /**
+     * longitude e.g. 121.4256 or 0.0 or null
+     */
+    var longitude: Float? = null,
+
+    /**
+     * shooting time
+     */
+    var date: String = "",
+
+    var createTime: String = "",
+
+    /**
+     * timestamp e.g. 09:22:32
+     */
+    var gpsTimeStamp: String? = null,
+
+
+
+    /**
+     * shooting device, mobile phone manufacturer
+     */
+    var make: String? = null
+)
