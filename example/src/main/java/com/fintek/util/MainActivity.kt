@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.fintek.util_example.R
+import com.fintek.utils_androidx.location.LocationUtils
 import com.fintek.utils_mexico.FintekMexicoUtils.getExtension
 
 class MainActivity : AppCompatActivity()  {
@@ -23,15 +24,21 @@ class MainActivity : AppCompatActivity()  {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.button).setOnClickListener {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.INTERNET, Manifest.permission.READ_CALENDAR,
-                ), 1000
-            )
+            if (!LocationUtils.isLocationServiceEnable()) {
+                LocationUtils.openLocationSettings(this)
+            } else {
+                Toast.makeText(applicationContext, "Location Enable", Toast.LENGTH_SHORT).show()
+            }
+
+//            ActivityCompat.requestPermissions(
+//                this, arrayOf(
+//                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_SMS,
+//                    Manifest.permission.READ_CONTACTS, Manifest.permission.READ_CALL_LOG,
+//                    Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_NETWORK_STATE,
+//                    Manifest.permission.INTERNET, Manifest.permission.READ_CALENDAR,
+//                ), 1000
+//            )
         }
     }
 

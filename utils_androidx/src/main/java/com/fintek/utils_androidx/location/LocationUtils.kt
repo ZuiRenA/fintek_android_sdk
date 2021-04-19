@@ -1,7 +1,9 @@
 package com.fintek.utils_androidx.location
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -44,6 +46,16 @@ class LocationUtils : LocationListener, LifecycleObserver {
                 )
                 !locationProviders.isNullOrEmpty()
             }
+        }
+
+        /**
+         * Provide to open settings page to get GPS info
+         * @param
+         */
+        @JvmStatic
+        fun openLocationSettings(activity: Activity) {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            activity.startActivityForResult(intent, 0)
         }
     }
 
