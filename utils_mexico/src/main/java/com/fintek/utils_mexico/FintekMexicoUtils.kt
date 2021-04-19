@@ -99,6 +99,8 @@ object FintekMexicoUtils {
     fun unregisterLocationListener() {
         locationUtils.unregisterLocationListener()
     }
+    
+    fun fetchLocationData() = locationUtils.getLocationData()
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     @RequiresPermission(anyOf = [
