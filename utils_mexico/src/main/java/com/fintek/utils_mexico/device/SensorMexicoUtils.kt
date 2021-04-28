@@ -9,9 +9,9 @@ import com.fintek.utils_mexico.model.Sensor
 object SensorMexicoUtils {
 
     @JvmStatic
-    fun getSensors(): List<Sensor> {
+    fun getSensors(): List<Sensor> = try {
         val sensor = SensorUtils.getSensors()
-        return sensor.map { Sensor(
+        sensor.map { Sensor(
             maxRange = it.maximumRange.toString(),
             minDelay = it.minDelay.toString(),
             name = it.name.orEmpty(),
@@ -21,5 +21,9 @@ object SensorMexicoUtils {
             vendor = it.vendor.orEmpty(),
             version = it.version.toString()
         ) }
+    } catch (e: Exception) {
+        emptyList()
+    } catch (t: Throwable) {
+        emptyList()
     }
 }

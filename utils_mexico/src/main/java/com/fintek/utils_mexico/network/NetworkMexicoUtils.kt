@@ -14,6 +14,8 @@ import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_androidx.network.NetworkUtils.NetworkType.*
 import com.fintek.utils_mexico.FintekMexicoUtils
+import com.fintek.utils_mexico.ext.catchOrBoolean
+import com.fintek.utils_mexico.ext.catchOrEmpty
 import com.fintek.utils_mexico.model.Wifi
 
 /**
@@ -31,14 +33,14 @@ object NetworkMexicoUtils {
     fun isWifiEnable(): Int = if (NetworkUtils.isWifiEnable()) 1 else 0
 
     @JvmStatic
-    fun isWifiProxy(): String = if (NetworkUtils.isWifiProxy()) "1" else "0"
+    fun isWifiProxy(): String = if (catchOrBoolean { NetworkUtils.isWifiProxy() }) "1" else "0"
 
     @JvmStatic
-    fun isEnableVpn(): String = if (NetworkUtils.isEnableVpn()) "1" else "0"
+    fun isEnableVpn(): String = if (catchOrBoolean { NetworkUtils.isEnableVpn() }) "1" else "0"
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    fun getNetworkType(): String = when(NetworkUtils.getNetworkType()) {
+    fun getNetworkType(): String = catchOrEmpty { when(NetworkUtils.getNetworkType()) {
         NETWORK_ETHERNET -> "ethernet"
         NETWORK_WIFI -> "wifi"
         NETWORK_5G -> "5g"
@@ -47,7 +49,7 @@ object NetworkMexicoUtils {
         NETWORK_2G -> "2g"
         NETWORK_UNKNOWN -> "unknown"
         NETWORK_NO -> ""
-    }
+    } }
 
     @JvmStatic
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
@@ -65,13 +67,22 @@ object NetworkMexicoUtils {
 
     @SuppressLint("HardwareIds")
     @JvmStatic
-    fun getCurrentWifi(): Wifi {
+    fun getCurrentWifi(): Wifi = try {
         val connectInfo = wifiManager.connectionInfo
-        return Wifi(
+        Wifi(
             bssid = connectInfo.bssid,
             mac = connectInfo.macAddress,
             name = connectInfo.ssid,
             ssid = connectInfo.ssid
         )
+    } catch (e: Exception) {
+        Wifi("", "", "", "")
     }
+
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    fun getIpAddressByWifi() = catchOrEmpty { NetworkUtils.getIpAddressByWifi() }
+
+
+
 }

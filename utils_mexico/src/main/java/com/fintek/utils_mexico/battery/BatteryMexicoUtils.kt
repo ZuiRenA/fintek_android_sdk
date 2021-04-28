@@ -23,10 +23,12 @@ object BatteryMexicoUtils {
         (getBatteryCapacityByHook() * percent / 100).toString()
     }
 
-    fun getPercent(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        BatteryUtils.getPercent()
-    } else {
-        -1
+    fun getPercent(): Int = catchOrZero(-1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            BatteryUtils.getPercent()
+        } else {
+            -1
+        }
     }
 
     fun isAcCharging(): Int = if (BatteryUtils.isAcCharging()) 1 else 0

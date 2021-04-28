@@ -32,3 +32,35 @@ fun catchOrEmpty(
 } catch (e: Throwable) {
     defaultValue
 }
+
+fun catchOrBoolean(
+    defaultValue: Boolean = false,
+    block: () -> Boolean
+): Boolean = try {
+    block()
+} catch (e: Exception) {
+    defaultValue
+} catch (t: Throwable) {
+    defaultValue
+}
+
+fun catchOrLong(
+    defaultValue: Long = 0L,
+    block: () -> Long
+): Long = try {
+    block()
+} catch (e: Exception) {
+    defaultValue
+} catch (t: Throwable) {
+    defaultValue
+}
+
+inline fun safely(block: () -> Unit) {
+    try {
+        block()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    } catch (t: Throwable) {
+        t.printStackTrace()
+    }
+}

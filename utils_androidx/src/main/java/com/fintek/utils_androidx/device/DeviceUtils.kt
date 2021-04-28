@@ -302,6 +302,7 @@ object DeviceUtils {
      * Get current keyboard type
      * @return current keyboard type
      */
+    @JvmStatic
     fun getCurrentKeyboardType(): Int {
         val inputDevices: List<InputDevice> = InputDevice.getDeviceIds().map {
             InputDevice.getDevice(it)

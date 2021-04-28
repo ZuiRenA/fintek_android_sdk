@@ -75,9 +75,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "No permissions", Toast.LENGTH_SHORT).show()
             return
         }
-
-        val deviceInfoHandler = DeviceInfoHandler.getDeviceInfo()
-
         FintekMexicoUtils.registerLocationListener()
         val deviceMexico = getExtension()
         val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())

