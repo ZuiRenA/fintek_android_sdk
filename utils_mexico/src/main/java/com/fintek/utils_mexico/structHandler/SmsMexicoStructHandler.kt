@@ -47,6 +47,10 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
             else -> -1
         }
 
+        val type: Int = when(cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.TYPE.projectionIndex()))) {
+            1 -> 1
+            else -> 2
+        }
 
         val personUri = Uri.withAppendedPath(
             ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
@@ -62,7 +66,7 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
             seen = seen,
             status = status,
             time = date,
-            type = cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.TYPE.projectionIndex())),
+            type = type,
             packageName = Telephony.Sms.getDefaultSmsPackage(FintekMexicoUtils.requiredApplication)
         )
     }
