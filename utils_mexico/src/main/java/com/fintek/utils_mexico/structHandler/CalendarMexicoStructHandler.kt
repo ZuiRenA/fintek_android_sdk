@@ -29,31 +29,42 @@ class CalendarMexicoStructHandler : ICalendarStruct<Calendar> {
         val id = cursor.getInt(columns.getAssertNotNull(CalendarContract.Events._ID.columnIndex()))
 
         val reminders = mutableListOf<Reminder>()
-        val cursorReminders = contentResolver.query( CalendarContract.Reminders.CONTENT_URI,
+        val cursorReminders = contentResolver.query(
+            CalendarContract.Reminders.CONTENT_URI,
             null,
-            CalendarContract.Reminders.EVENT_ID + "=" + id
-            , null, null
+            null,
+            null, null
         )
 
         if (cursorReminders != null) {
             if (!cursorReminders.moveToFirst()) {
-                cursor.moveToFirst()
+                cursorReminders.moveToFirst()
             }
             while (cursorReminders.moveToNext()) {
-                val method = cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.METHOD))
-                val minutes = cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.MINUTES))
-                val reminderId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders._ID))
+                val method =
+                    cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders.METHOD))
+                val minutes =
+                    cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders.MINUTES))
+                val eventId =
+                    cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders.EVENT_ID))
+                val reminderId =
+                    cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders._ID))
 
-                reminders.add(
-                    Reminder(
-                        eventId = id,
-                        method = method,
-                        minutes = minutes,
-                        reminderId = reminderId
-                    ))
+                if (eventId == id) {
+                    reminders.add(
+                        Reminder(
+                            eventId = id,
+                            method = method,
+                            minutes = minutes,
+                            reminderId = reminderId
+                        )
+                    )
+                }
+
+
             }
         }
-
+        cursorReminders?.close()
 
 
         return Calendar(

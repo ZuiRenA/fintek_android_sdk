@@ -6,3 +6,4 @@ include ':utils_webview'
 include ':utils_androidx'
 include ':example'
 rootProject.name = "Utils"
+include ':card_view'

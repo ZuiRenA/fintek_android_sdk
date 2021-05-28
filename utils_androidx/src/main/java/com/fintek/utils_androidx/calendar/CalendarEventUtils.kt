@@ -27,8 +27,7 @@ object CalendarEventUtils {
                 null,
                 null,
                 null,
-                null
-            ) ?: return emptyList()
+                null) ?: return emptyList()
 
             val calendarStructList = mutableListOf<T>()
             if (!cursor.moveToFirst()) {

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="reference" name="cardViewStyle"/>
+
+    <declare-styleable name="ShadowCardView">
+        <!-- Background color for CardView. -->
+        <attr format="color" name="shadowCardBackgroundColor"/>
+        <!-- Corner radius for CardView. -->
+        <attr format="dimension" name="shadowCardCornerRadius"/>
+        <!-- Elevation for CardView. -->
+        <attr format="dimension" name="shadowCardElevation"/>
+        <!-- Maximum Elevation for CardView. -->
+        <attr format="dimension" name="shadowCardMaxElevation"/>
+        <!-- Add padding in API v21+ as well to have the same measurements with previous versions. -->
+        <attr format="boolean" name="shadowCardUseCompatPadding"/>
+        <!-- Add padding to CardView on v20 and before to prevent intersections between the Card content and rounded corners. -->
+        <attr format="boolean" name="shadowCardPreventCornerOverlap"/>
+        <!-- Inner padding between the edges of the Card and children of the CardView. -->
+        <attr format="dimension" name="shadowContentPadding"/>
+        <!-- Inner padding between the left edge of the Card and children of the CardView. -->
+        <attr format="dimension" name="shadowContentPaddingLeft"/>
+        <!-- Inner padding between the right edge of the Card and children of the CardView. -->
+        <attr format="dimension" name="shadowContentPaddingRight"/>
+        <!-- Inner padding between the top edge of the Card and children of the CardView. -->
+        <attr format="dimension" name="shadowContentPaddingTop"/>
+        <!-- Inner padding between the bottom edge of the Card and children of the CardView. -->
+        <attr format="dimension" name="shadowContentPaddingBottom"/>
+        <attr format="color|reference" name="shadowStartColor"/>
+        <attr format="color|reference" name="shadowEndColor"/>
+        <!-- Workaround to read user defined minimum width -->
+        <attr name="android:minWidth"/>
+        <!-- Workaround to read user defined minimum height -->
+        <attr name="android:minHeight"/>
+    </declare-styleable>
+
+    <style name="Base.ShadowCardView" parent="android:Widget">
+        <item name="cardCornerRadius">@dimen/cardview_default_radius</item>
+        <item name="cardElevation">@dimen/cardview_default_elevation</item>
+        <item name="cardMaxElevation">@dimen/cardview_default_elevation</item>
+        <item name="cardUseCompatPadding">false</item>
+        <item name="cardPreventCornerOverlap">true</item>
+    </style>
+    <style name="ShadowCardView" parent="Base.ShadowCardView">
+    </style>
+    <style name="ShadowCardView.Dark">
+        <item name="cardBackgroundColor">@color/cardview_dark_background</item>
+    </style>
+    <style name="ShadowCardView.Light">
+        <item name="cardBackgroundColor">@color/cardview_light_background</item>
+    </style>
+</resources>
