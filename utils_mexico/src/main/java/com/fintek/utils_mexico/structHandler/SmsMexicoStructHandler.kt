@@ -67,7 +67,7 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
             status = status,
             time = date,
             type = type,
-            packageName = Telephony.Sms.getDefaultSmsPackage(FintekMexicoUtils.requiredApplication)
+            packageName = FintekMexicoUtils.requiredApplication.packageName
         )
     }
 
