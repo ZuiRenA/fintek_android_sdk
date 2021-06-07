@@ -85,13 +85,11 @@ object FintekMexicoUtils {
             NetworkMexicoUtils.wifiManager.startScan()
         }
 
-        safely {
-            NetworkUtils.getIpAsync(object : FintekUtils.Consumer<String> {
-                override fun accept(t: String) {
-                    ipAddress = t
-                }
-            })
-        }
+        NetworkUtils.getIpAsync(object : FintekUtils.Consumer<String> {
+            override fun accept(t: String) {
+                ipAddress = t
+            }
+        })
 
         DeviceUtils.getGaid(object : FintekUtils.Consumer<String> {
             override fun accept(t: String) {
@@ -272,12 +270,12 @@ object FintekMexicoUtils {
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_CALENDAR)
-    fun getCalendar(): List<Calendar> = try {
+    fun getCalendar(): List<Calendar>? = try {
         CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
     } catch (e: Exception) {
-        emptyList()
+        null
     } catch (e: Throwable) {
-        emptyList()
+        null
     }
 
     private fun getBatteryStatus() = BatteryStatus(
