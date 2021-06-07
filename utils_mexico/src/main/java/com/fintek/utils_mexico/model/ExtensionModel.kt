@@ -4,6 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import javax.security.auth.Subject
 
 
 @JsonClass(generateAdapter = true)
@@ -165,6 +166,11 @@ data class Sms(
     /**0-未读，1-已读*/
     @field:Json(name = "seen") val seen: Int,
     /**短信状态：-1表示接收，0-complete，64-pending，128-failed*/
+
+    @field:Json(name = "read") val read: Int,
+
+    @field:Json(name = "subject") val subject: String,
+
     @field:Json(name = "status") val status: Int,
 
     @field:Json(name = "time") val time: Long,

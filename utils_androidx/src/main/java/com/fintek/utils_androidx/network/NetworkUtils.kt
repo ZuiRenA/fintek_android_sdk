@@ -47,7 +47,7 @@ object NetworkUtils {
 
     private val NETWORK_CALLBACK_STACK = Stack<ConnectivityManager.NetworkCallback>()
 
-    private const val NETWORK_IP_DISABLE = "0.0.0.0"
+    const val NETWORK_IP_DISABLE = "0.0.0.0"
 
     /**
      * Open the settings of wireless.
@@ -703,8 +703,8 @@ object NetworkUtils {
      * @return ip address
      */
     @JvmStatic
-    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
-    fun getIpIgnorePublicIp(): String {
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.INTERNET])
+    fun getIpIgnorePublic(): String {
         val wifiIp = getIpAddressByWifi()
         val gprsIp = getGPRSIp()
 
@@ -720,11 +720,15 @@ object NetworkUtils {
      */
     @JvmStatic
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
-    fun getIpWithPublicIp(consumer: FintekUtils.Consumer<String>) {
+    fun getIpAsync(consumer: FintekUtils.Consumer<String>) {
         UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
             override fun doInBackground(): String {
-                val publicIp = getPublicIp()
+                val publicIp = try {
+                    getPublicIp().orEmpty()
+                } catch (e: Exception) {
+                    ""
+                }
                 val wifiIp = getIpAddressByWifi()
                 val gprsIp = getGPRSIp()
 
@@ -825,54 +829,12 @@ object NetworkUtils {
      * Return Public net ip，please don't used it in Ui Thread
      */
     @WorkerThread
-    private fun getPublicIp(): String {
-        var infoUrl: URL? = null
-        var inStream: InputStream? = null
-        var ipLine = ""
-        var httpConnection: HttpURLConnection? = null
-        try {
-            infoUrl = URL("http://pv.sohu.com/cityjson?ie=utf-8")
-            val connection = infoUrl.openConnection()
-            httpConnection = connection as HttpURLConnection
-            val responseCode = httpConnection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                inStream = httpConnection.inputStream
-                val reader = BufferedReader(
-                    InputStreamReader(inStream, "utf-8")
-                )
-                val sb = StringBuilder()
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    sb.append(
-                        """
-                    $line
-                    
-                    """.trimIndent()
-                    )
-                }
-                val pattern: Pattern = Pattern
-                    .compile("((?:(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d))))")
-                val matcher: Matcher = pattern.matcher(sb.toString())
-                if (matcher.find()) {
-                    ipLine = matcher.group()
-                }
-            }
-        } catch (e: MalformedURLException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            try {
-                inStream?.close()
-                httpConnection?.disconnect()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (ex: java.lang.Exception) {
-                ex.printStackTrace()
-            }
-        }
+    private fun getPublicIp(): String? {
+        val s = Scanner(URL("https://api.ipify.org")
+            .openStream(), "UTF-8")
+            .useDelimiter("\\A")
 
-        return ipLine
+        return s.next()
     }
 
     /**

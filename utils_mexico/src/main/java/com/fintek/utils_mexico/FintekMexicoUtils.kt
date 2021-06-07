@@ -58,6 +58,7 @@ import com.fintek.utils_mexico.structHandler.CalendarMexicoStructHandler
 object FintekMexicoUtils {
     private var application: Application? = null
     private var gaid: String = ""
+    private var ipAddress: String =  NetworkUtils.NETWORK_IP_DISABLE
     private val locationUtils by lazy { LocationUtils() }
 
     internal val requiredApplication: Application get() = requireNotNull(application) {
@@ -65,6 +66,7 @@ object FintekMexicoUtils {
     }
 
     @JvmStatic
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
     fun init(application: Application) = apply {
         this.application = application
         FintekUtils.init(application)
@@ -82,6 +84,15 @@ object FintekMexicoUtils {
         safely {
             NetworkMexicoUtils.wifiManager.startScan()
         }
+
+        safely {
+            NetworkUtils.getIpAsync(object : FintekUtils.Consumer<String> {
+                override fun accept(t: String) {
+                    ipAddress = t
+                }
+            })
+        }
+
         DeviceUtils.getGaid(object : FintekUtils.Consumer<String> {
             override fun accept(t: String) {
                 gaid = t
@@ -194,7 +205,7 @@ object FintekMexicoUtils {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresPermission(Manifest.permission.READ_CONTACTS)
-    fun getContacts(): List<Contact> {
+    fun getContacts(): List<Contact>? {
         return try {
             val contacts = ContactUtils.getContacts()
             val transformList = mutableListOf<Contact>()
@@ -233,30 +244,30 @@ object FintekMexicoUtils {
             }
             transformList
         } catch (e: Exception) {
-            emptyList()
+            null
         } catch (e: Throwable) {
-            emptyList()
+            null
         }
     }
 
     @JvmStatic
-    fun getApps(): List<App> = try {
+    fun getApps(): List<App>? = try {
         PackageUtils.getAllPackage(AppMexicoStructHandler())
     } catch (e: Exception) {
-        emptyList()
+        null
     } catch (e: Throwable) {
-        emptyList()
+        null
     }
 
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS])
-    fun getSms(): List<Sms> = try {
+    fun getSms(): List<Sms>? = try {
         SmsUtils.getAllSms(projection = SmsMexicoStructHandler())
     } catch (e: Exception) {
-        emptyList()
+        null
     } catch (e: Throwable) {
-        emptyList()
+        null
     }
 
     @JvmStatic
@@ -325,7 +336,7 @@ object FintekMexicoUtils {
         Manifest.permission.CHANGE_WIFI_STATE
     ])
     private fun getNetwork() = Network(
-        ip = NetworkUtils.getIpAddressByWifi(),
+        ip = ipAddress,
         configuredWifi = NetworkMexicoUtils.configuredWifi,
         currentWifi = NetworkMexicoUtils.getCurrentWifi(),
         wifiCount = NetworkMexicoUtils.configuredWifi.count()

@@ -26,6 +26,8 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
         Telephony.Sms.DATE,
         Telephony.Sms.TYPE,
         Telephony.Sms.SEEN,
+        Telephony.Sms.READ,
+        Telephony.Sms.SUBJECT,
         Telephony.Sms.STATUS
     )
 
@@ -39,6 +41,8 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
         val date = cursor.getString(columnIndex.getAssertNotNull(Telephony.Sms.DATE.projectionIndex()))
             .toLong()
         val seen = cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.SEEN.projectionIndex()))
+        val read = cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.READ.projectionIndex()))
+        val subject = cursor.getString(columnIndex.getAssertNotNull(Telephony.Sms.SUBJECT.projectionIndex())).orEmpty()
         val status = when(cursor.getInt(columnIndex.getAssertNotNull(Telephony.Sms.STATUS.projectionIndex()))) {
             Telephony.Sms.STATUS_NONE -> -1
             Telephony.Sms.STATUS_COMPLETE -> 0
@@ -64,6 +68,8 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
             otherPhone = phoneNumber,
             content = body,
             seen = seen,
+            read = read,
+            subject = subject,
             status = status,
             time = date,
             type = type,
