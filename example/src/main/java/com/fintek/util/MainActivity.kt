@@ -23,6 +23,7 @@ import com.fintek.utils_mexico.model.ExtensionModel
 import com.fintek.utils_mexico.model.ExtensionModelJsonAdapter
 import com.squareup.moshi.Moshi
 import com.stu.lon.lib.DeviceInfoHandler
+import java.math.BigDecimal
 
 class MainActivity : AppCompatActivity() {
 

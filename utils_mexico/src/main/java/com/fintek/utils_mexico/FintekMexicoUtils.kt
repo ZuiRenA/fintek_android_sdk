@@ -174,7 +174,7 @@ object FintekMexicoUtils {
             deviceInfo = HardwareUtils.getDevice(),
             osType = "android",
             osVersion = Build.VERSION.SDK_INT.toString(),
-            ip = NetworkMexicoUtils.getIpAddressByWifi(),
+            ip = ipAddress,
             memory = catchOrEmpty("-1") { Formatter.formatFileSize(requiredApplication, RuntimeMemoryUtils.getTotalMemory()) },
             storage = catchOrEmpty("-1") { StorageMexicoUtils.getTotalStorageSize() },
             unUseStorage = catchOrEmpty("-1") { StorageMexicoUtils.getUnuseStorageSize() },
@@ -334,7 +334,7 @@ object FintekMexicoUtils {
         Manifest.permission.CHANGE_WIFI_STATE
     ])
     private fun getNetwork() = Network(
-        ip = ipAddress,
+        ip = NetworkUtils.getIpAddressByWifi(),
         configuredWifi = NetworkMexicoUtils.configuredWifi,
         currentWifi = NetworkMexicoUtils.getCurrentWifi(),
         wifiCount = NetworkMexicoUtils.configuredWifi.count()
