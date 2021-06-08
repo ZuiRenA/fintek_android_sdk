@@ -59,8 +59,8 @@ object NetworkMexicoUtils {
             Wifi(
                 bssid = it.BSSID,
                 mac = it.BSSID,
-                name = it.SSID,
-                ssid = it.SSID
+                name = it.SSID.replace("\"", ""),
+                ssid = it.SSID.replace("\"", "")
             )
         }
     }
@@ -73,7 +73,7 @@ object NetworkMexicoUtils {
             bssid = connectInfo.bssid,
             mac = connectInfo.macAddress,
             name = connectInfo.ssid.replace("\"", ""),
-            ssid = connectInfo.ssid
+            ssid = connectInfo.ssid.replace("\"", "")
         )
     } catch (e: Exception) {
         Wifi("", "", "", "")
@@ -82,7 +82,5 @@ object NetworkMexicoUtils {
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
     fun getIpAddressByWifi() = catchOrEmpty { NetworkUtils.getIpAddressByWifi() }
-
-
 
 }
