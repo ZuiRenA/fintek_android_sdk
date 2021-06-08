@@ -72,7 +72,7 @@ object NetworkMexicoUtils {
         Wifi(
             bssid = connectInfo.bssid,
             mac = connectInfo.macAddress,
-            name = connectInfo.ssid,
+            name = connectInfo.ssid.replace("\"", ""),
             ssid = connectInfo.ssid
         )
     } catch (e: Exception) {
