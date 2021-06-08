@@ -11,13 +11,13 @@ import android.os.SystemClock
 import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import androidx.core.content.edit
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.packageInfo.PackageUtils
 import com.fintek.utils_androidx.app.AppUtils
 import com.fintek.utils_androidx.battery.BatteryUtils
 import com.fintek.utils_androidx.calendar.CalendarEventUtils
 import com.fintek.utils_androidx.contact.ContactUtils
-import com.fintek.utils_androidx.date.DateUtils
 import com.fintek.utils_androidx.device.DeviceUtils
 import com.fintek.utils_androidx.hardware.HardwareUtils
 import com.fintek.utils_androidx.language.LanguageUtils
@@ -27,10 +27,8 @@ import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_androidx.phone.PhoneUtils
 import com.fintek.utils_androidx.sms.SmsUtils
 import com.fintek.utils_androidx.storage.RuntimeMemoryUtils
-import com.fintek.utils_androidx.storage.SDCardUtils
 import com.fintek.utils_androidx.storage.StorageUtils
 import com.fintek.utils_androidx.thread.ThreadUtils
-import com.fintek.utils_mexico.albs.AlbsUtils
 import com.fintek.utils_mexico.battery.BatteryMexicoUtils
 import com.fintek.utils_mexico.boardcastReceiver.NetworkBroadcastReceiver
 import com.fintek.utils_mexico.date.DateMexicoUtils
@@ -60,6 +58,7 @@ object FintekMexicoUtils {
     private var gaid: String = ""
     private var ipAddress: String =  NetworkUtils.NETWORK_IP_DISABLE
     private val locationUtils by lazy { LocationUtils() }
+    private val sp by lazy { requiredApplication.getSharedPreferences("FintekMexicoUtils", Context.MODE_PRIVATE) }
 
     internal val requiredApplication: Application get() = requireNotNull(application) {
         "FintekMexicoUtils must init first, please use FintekMexicoUtils.init(Application application)"
@@ -99,6 +98,19 @@ object FintekMexicoUtils {
                 }
             }
         })
+    }
+
+    @JvmStatic
+    fun putLastLoginTime(millisecond: Long) {
+        sp.edit {
+            putLong("LAST_LOGIN_TIME", millisecond)
+        }
+    }
+
+    @JvmStatic
+    fun getLastLoginTime(): Long {
+        val nowTime = System.currentTimeMillis()
+        return sp.getLong("LAST_LOGIN_TIME", nowTime)
     }
 
     @JvmStatic
@@ -187,7 +199,7 @@ object FintekMexicoUtils {
             battery = BatteryUtils.getPercent(),
             isRoot = DeviceMexicoUtils.isRoot(),
             isSimulator = DeviceMexicoUtils.isSimulator(),
-            lastLoginTime = getOtherData().lastBootTime,
+            lastLoginTime = getLastLoginTime(),
             picCount = ImageQueryUtils.getExternalImageCount() + ImageQueryUtils.getInternalImageCount(),
             imsi = DeviceMexicoUtils.getImsi(),
             mac = MacUtils.getMacAddress(),
