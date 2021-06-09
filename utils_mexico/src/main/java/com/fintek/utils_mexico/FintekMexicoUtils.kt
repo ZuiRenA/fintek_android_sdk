@@ -94,9 +94,13 @@ object FintekMexicoUtils {
     }
 
     @JvmStatic
-    fun getLastLoginTime(): Long {
+    suspend fun getLastLoginTime(): Long = withContext(Dispatchers.Main) {
         val nowTime = System.currentTimeMillis()
-        return sp.getLong("LAST_LOGIN_TIME", nowTime)
+        val realLoginTime = sp.getLong("LAST_LOGIN_TIME", nowTime)
+        if (realLoginTime == nowTime) {
+            putLastLoginTime(realLoginTime)
+        }
+        realLoginTime
     }
 
     @JvmStatic
@@ -190,7 +194,7 @@ object FintekMexicoUtils {
             battery = BatteryUtils.getPercent(),
             isRoot = DeviceMexicoUtils.isRoot(),
             isSimulator = DeviceMexicoUtils.isSimulator(),
-            lastLoginTime = withContext(Dispatchers.Main) { getLastLoginTime() },
+            lastLoginTime = getLastLoginTime(),
             picCount = ImageQueryUtils.getExternalImageCount() + ImageQueryUtils.getInternalImageCount(),
             imsi = DeviceMexicoUtils.getImsi(),
             mac = MacMexicoUtils.getMacAddress(),
