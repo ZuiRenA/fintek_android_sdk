@@ -6,8 +6,10 @@ fun catchOrZero(
 ): Int = try {
     block()
 } catch (e: Exception) {
+    e.printStackTrace()
     defaultValue
 } catch (t: Throwable) {
+    t.printStackTrace()
     defaultValue
 }
 
@@ -17,8 +19,10 @@ fun catchOrZeroDouble(
 ): Double = try {
     block()
 } catch (e: Exception) {
+    e.printStackTrace()
     defaultValue
 } catch (t: Throwable) {
+    t.printStackTrace()
     defaultValue
 }
 
@@ -28,8 +32,10 @@ fun catchOrEmpty(
 ): String = try {
     block()
 } catch (e: Exception) {
+    e.printStackTrace()
     defaultValue
 } catch (e: Throwable) {
+    e.printStackTrace()
     defaultValue
 }
 
@@ -39,8 +45,10 @@ fun catchOrBoolean(
 ): Boolean = try {
     block()
 } catch (e: Exception) {
+    e.printStackTrace()
     defaultValue
 } catch (t: Throwable) {
+    t.printStackTrace()
     defaultValue
 }
 
@@ -50,8 +58,10 @@ fun catchOrLong(
 ): Long = try {
     block()
 } catch (e: Exception) {
+    e.printStackTrace()
     defaultValue
 } catch (t: Throwable) {
+    t.printStackTrace()
     defaultValue
 }
 

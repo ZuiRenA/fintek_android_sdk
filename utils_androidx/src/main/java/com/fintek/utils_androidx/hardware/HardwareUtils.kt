@@ -1,13 +1,17 @@
 package com.fintek.utils_androidx.hardware
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Point
 import android.os.Build
+import android.util.DisplayMetrics
+import android.view.Display
 import android.view.WindowManager
 import com.fintek.utils_androidx.FintekUtils
 import kotlin.math.pow
 import kotlin.math.sqrt
+
 
 /**
  * Created by ChaoShen on 2020/11/18
@@ -128,7 +132,7 @@ object HardwareUtils {
     @JvmStatic
     fun getPhysicalInch(): Float {
         val dm = FintekUtils.requiredContext.resources.displayMetrics
-        val density = dm.density * 160
+        val density = dm.density * dm.densityDpi
         val x = (dm.widthPixels / density).pow(2)
         val y = (dm.heightPixels / density).pow(2)
         return sqrt(x + y)

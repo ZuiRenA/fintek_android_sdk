@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
-
+    <queries android:name="android.permission.QUERY_ALL_PACKAGES"/>
     
     <application
         android:name="com.fintek.util.MyApplication"

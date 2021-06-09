@@ -23,9 +23,12 @@ import com.fintek.utils_mexico.model.ExtensionModel
 import com.fintek.utils_mexico.model.ExtensionModelJsonAdapter
 import com.squareup.moshi.Moshi
 import com.stu.lon.lib.DeviceInfoHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val etUserId: EditText by lazy { findViewById(R.id.etInputUserId) }
 
@@ -76,10 +79,12 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "No permissions", Toast.LENGTH_SHORT).show()
             return
         }
-        FintekMexicoUtils.registerLocationListener()
-        val deviceMexico = getExtension()
-        val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())
-        val json = adapter.toJson(deviceMexico)
-        FintekMexicoUtils.unregisterLocationListener()
+        launch {
+            FintekMexicoUtils.registerLocationListener()
+            val deviceMexico = getExtension()
+            val adapter = ExtensionModelJsonAdapter(Moshi.Builder().build())
+            val json = adapter.toJson(deviceMexico)
+            FintekMexicoUtils.unregisterLocationListener()
+        }
     }
 }

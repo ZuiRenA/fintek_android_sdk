@@ -14,8 +14,12 @@ object DateUtils {
 
     @JvmOverloads
     @JvmStatic
-    fun getCurrentDateTime(format: SimpleDateFormat = DEFAULT_FORMAT): String {
-        val date = Date()
-        return format.format(date)
+    fun getCurrentDateTime(
+        format: SimpleDateFormat = DEFAULT_FORMAT,
+        timeZone: TimeZone = TimeZone.getDefault()
+    ): String {
+        val date = Calendar.getInstance()
+        format.timeZone = timeZone
+        return format.format(date.time)
     }
 }

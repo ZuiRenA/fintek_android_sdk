@@ -3,10 +3,12 @@ package com.fintek.utils_mexico.storage
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
+import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.storage.SDCardUtils
 import com.fintek.utils_mexico.FintekMexicoUtils
 import com.fintek.utils_mexico.ext.catchOrBoolean
+import com.fintek.utils_mexico.ext.catchOrEmpty
 
 /**
  * Created by ChaoShen on 2021/4/16
@@ -21,22 +23,23 @@ object SDCardMexicoUtils {
 
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    fun getSDCardTotalSize(): String {
-        var sdCardTotalSizeStr = SDCardUtils.getTotalSizeString()
-        if (sdCardTotalSizeStr.isEmpty()) {
-            sdCardTotalSizeStr = "-1"
+    fun getSDCardTotalSize(): String = catchOrEmpty("-1") {
+        val sdCardTotalSize = getTotalSize()
+        if (sdCardTotalSize == 0L) {
+            return@catchOrEmpty "-1"
         }
-        return sdCardTotalSizeStr
+        return@catchOrEmpty Formatter.formatFileSize(FintekMexicoUtils.requiredApplication, sdCardTotalSize)
     }
 
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    fun getSDCardAvailableSize(): String {
-        var sdCardAvailableSizeStr = SDCardUtils.getAvailableSizeString()
-        if (sdCardAvailableSizeStr.isEmpty()) {
-            sdCardAvailableSizeStr = "-1"
+    fun getSDCardAvailableSize(): String = catchOrEmpty("-1") {
+        val sdCardAvailableSize = getAvailableSize()
+        if (sdCardAvailableSize == 0L) {
+            return@catchOrEmpty "-1"
         }
-        return sdCardAvailableSizeStr
+
+        return@catchOrEmpty Formatter.formatFileSize(FintekMexicoUtils.requiredApplication, sdCardAvailableSize)
     }
 
     @JvmStatic

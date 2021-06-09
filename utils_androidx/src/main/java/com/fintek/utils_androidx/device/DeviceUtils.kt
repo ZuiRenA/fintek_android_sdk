@@ -259,7 +259,6 @@ object DeviceUtils {
     @JvmStatic
     fun getDeviceName(): String {
         return Settings.System.getString(FintekUtils.requiredContext.contentResolver, "device_name")
-            ?: Settings.Secure.getString(FintekUtils.requiredContext.contentResolver, "bluetooth_name")
             ?: Build.MODEL
     }
 

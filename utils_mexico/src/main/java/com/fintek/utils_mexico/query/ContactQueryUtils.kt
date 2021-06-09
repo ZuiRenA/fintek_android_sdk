@@ -1,6 +1,7 @@
 package com.fintek.utils_mexico.query
 
 import android.provider.ContactsContract
+import com.fintek.utils_androidx.log.TimberUtil
 import com.fintek.utils_androidx.query.ContentQueryUtils
 import com.fintek.utils_mexico.FintekMexicoUtils
 import com.fintek.utils_mexico.ext.catchOrZero
@@ -14,18 +15,19 @@ object ContactQueryUtils {
     fun getContactGroupCount(): Int {
         return catchOrZero {
             val cursor = FintekMexicoUtils.requiredApplication.contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
-                arrayOf(
-                    ContactsContract.Groups._ID,
-                ), null, null, null
+                ContactsContract.Groups.CONTENT_URI,
+                null, null, null, null
             ) ?: return@catchOrZero 0
 
-            val groupSet: MutableSet<Int> = mutableSetOf()
+            val groupSet: MutableSet<String> = mutableSetOf()
             while (cursor.moveToNext()) {
                 val groupIdColumn = cursor.getColumnIndex(ContactsContract.Groups._ID)
+                val groupTitleColumn = cursor.getColumnIndex(ContactsContract.Groups.TITLE)
                 val id = cursor.getInt(groupIdColumn)
-                groupSet.add(id)
+                val title = cursor.getString(groupTitleColumn)
+                groupSet.add(title)
             }
+            cursor.close()
             return@catchOrZero groupSet.size
         }
     }

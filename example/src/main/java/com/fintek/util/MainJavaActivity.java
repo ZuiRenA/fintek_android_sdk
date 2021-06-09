@@ -1,8 +1,11 @@
 package com.fintek.util;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.fintek.model.BaseResponse;
 import com.fintek.model.UserExtInfoReq;
@@ -34,46 +37,5 @@ public class MainJavaActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_java);
-
-        CoronetRequest request = new CoronetRequest.Builder()
-                .setBaseUrl("http://47.117.39.82:8180")
-                .addHeader("Connection", "Keep-Alive")
-                .addHeader("Content-Type", "application/Json;charset:Utf-8")
-                .addHeader("x-merchant", "mexico")
-                .addHeader("x-version", "1.0.0")
-                .addHeader("x-package-name", "com.fintek.mexico_laon")
-                .addHeader("x-auth-token", "d47fd6a35b034d249ed5bafb5333d6b3")
-                .setConnectTimeout(60, TimeUnit.SECONDS)
-                .setReadTimeout(60, TimeUnit.SECONDS)
-                .build();
-
-        ExtensionModel temp = FintekMexicoUtils.INSTANCE.getExtension();
-        temp.setUserId(19);
-        temp.setMerchant("mexico");
-        UserExtInfoReq req = new UserExtInfoReq(temp);
-
-        RequestBody requestBody = RequestBody.create(
-                new Gson().toJson(req),
-                MediaType.toMediaType("application/json; charset=utf-8")
-        );
-
-        RequestTask<BaseResponse<Void>> task = request.call(new Request.Builder()
-                .url("/api/auth/ext-info")
-                .post(requestBody).build(), s -> {
-                    try {
-                        ParameterizedType types = Types.newParameterizedType(BaseResponse.class, Void.class);
-                        JsonAdapter<BaseResponse<Void>> adapter = new Moshi.Builder().build()
-                                .adapter(types);
-                        return adapter.fromJson(s);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                });
-
-        task.onNext(TimberUtil::e)
-                .onError(TimberUtil::e)
-                .onCancel(unit -> TimberUtil.v("cancel"))
-                .execute(Dispatchers.CPU);
     }
 }

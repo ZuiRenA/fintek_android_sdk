@@ -6,13 +6,9 @@ import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
 
 /**
- * Created by ChaoShen on 2021/4/16
+ * Created by ChaoShen on 2021/6/9
  */
-object CalendarEventUtils {
-    private val DEFAULT = CalendarDefaultStructHandler()
-
-    @JvmStatic
-    fun getCalendar() = getCalendar(DEFAULT)
+object CalendarUtils {
 
     @JvmStatic
     fun <T> getCalendar(
@@ -23,13 +19,17 @@ object CalendarEventUtils {
         val contentResolver = FintekUtils.requiredContext.contentResolver
         var cursor: Cursor? = null
         try {
-            cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI,
+            cursor = contentResolver.query(
+                CalendarContract.Calendars.CONTENT_URI,
                 null,
                 null,
                 null,
                 null) ?: return emptyList()
 
             val calendarStructList = mutableListOf<T>()
+            if (!cursor.moveToFirst()) {
+                cursor.moveToFirst()
+            }
             while (cursor.moveToNext()) {
                 val sparseArrayCompat = SparseArrayCompat<Int>()
                 calendarStructHandler.queryColumns().forEachIndexed { index, key ->

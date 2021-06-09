@@ -31,15 +31,17 @@ class CalendarMexicoStructHandler : ICalendarStruct<Calendar> {
         val reminders = mutableListOf<Reminder>()
         val cursorReminders = contentResolver.query(
             CalendarContract.Reminders.CONTENT_URI,
-            null,
-            null,
-            null, null
+            arrayOf(
+                CalendarContract.Reminders._ID,
+                CalendarContract.Reminders.EVENT_ID,
+                CalendarContract.Reminders.MINUTES,
+                CalendarContract.Reminders.METHOD
+            ),
+            CalendarContract.Reminders.EVENT_ID + "=?",
+            arrayOf("$id"), null
         )
 
         if (cursorReminders != null) {
-            if (!cursorReminders.moveToFirst()) {
-                cursorReminders.moveToFirst()
-            }
             while (cursorReminders.moveToNext()) {
                 val method =
                     cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders.METHOD))
@@ -50,18 +52,14 @@ class CalendarMexicoStructHandler : ICalendarStruct<Calendar> {
                 val reminderId =
                     cursorReminders.getInt(cursorReminders.getColumnIndex(CalendarContract.Reminders._ID))
 
-                if (eventId == id) {
-                    reminders.add(
-                        Reminder(
-                            eventId = id,
-                            method = method,
-                            minutes = minutes,
-                            reminderId = reminderId
-                        )
+                reminders.add(
+                    Reminder(
+                        eventId = eventId,
+                        method = method,
+                        minutes = minutes,
+                        reminderId = reminderId
                     )
-                }
-
-
+                )
             }
         }
         cursorReminders?.close()

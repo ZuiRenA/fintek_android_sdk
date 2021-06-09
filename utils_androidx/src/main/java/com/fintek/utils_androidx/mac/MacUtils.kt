@@ -14,7 +14,7 @@ object MacUtils {
         'C'.toByte(), 'D'.toByte(), 'E'.toByte(), 'F'.toByte()
     )
 
-    private const val INVALID_MAC_ADDRESS = "02:00:00:00:00:00"
+    const val INVALID_MAC_ADDRESS = "02:00:00:00:00:00"
 
     /**
      * Return long mac

@@ -2,31 +2,35 @@ package com.fintek.utils_mexico.network
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.net.MacAddress
-import android.net.NetworkRequest
-import android.net.NetworkSpecifier
-import android.net.wifi.WifiConfiguration
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.wifi.WifiManager
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.text.TextUtils
 import androidx.annotation.RequiresPermission
+import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_androidx.network.NetworkUtils.NetworkType.*
 import com.fintek.utils_mexico.FintekMexicoUtils
 import com.fintek.utils_mexico.ext.catchOrBoolean
 import com.fintek.utils_mexico.ext.catchOrEmpty
+import com.fintek.utils_mexico.ext.safely
+import com.fintek.utils_mexico.mac.MacMexicoUtils
 import com.fintek.utils_mexico.model.Wifi
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+
 
 /**
  * Created by ChaoShen on 2021/4/15
  */
 object NetworkMexicoUtils {
-    internal val wifiManager by lazy {
+    private val wifiManager by lazy {
         FintekMexicoUtils.requiredApplication.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
-
-    internal var configuredWifi: MutableList<Wifi> = mutableListOf()
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
@@ -51,19 +55,6 @@ object NetworkMexicoUtils {
         NETWORK_NO -> ""
     } }
 
-    @JvmStatic
-    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
-    fun getConfiguredWifi(): List<Wifi> {
-        val scanWifiList = wifiManager.scanResults
-        return scanWifiList.mapNotNull {
-            Wifi(
-                bssid = it.BSSID,
-                mac = it.BSSID,
-                name = it.SSID.replace("\"", ""),
-                ssid = it.SSID.replace("\"", "")
-            )
-        }
-    }
 
     @SuppressLint("HardwareIds")
     @JvmStatic
@@ -80,7 +71,38 @@ object NetworkMexicoUtils {
     }
 
     @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
-    fun getIpAddressByWifi() = catchOrEmpty { NetworkUtils.getIpAddressByWifi() }
+    @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
+    suspend fun getIp(): String = suspendCoroutine {
+        NetworkUtils.getIpAsync(object : FintekUtils.Consumer<String> {
+            override fun accept(t: String) {
+                it.resume(t)
+            }
+        })
+    }
 
+    suspend fun getConfiguredWifi(): List<Wifi> = suspendCoroutine { continuation ->
+        safely {
+            FintekMexicoUtils.requiredApplication.registerReceiver(WifiBroadcastReceiver(continuation), IntentFilter().apply {
+                addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+            })
+        }
+        safely {
+            wifiManager.startScan()
+        }
+    }
+
+    private class WifiBroadcastReceiver(private val continuation: Continuation<List<Wifi>>) : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val scanWifiList = wifiManager.scanResults
+            continuation.resume(scanWifiList.mapNotNull {
+                Wifi(
+                    bssid = it.BSSID,
+                    mac = it.BSSID,
+                    name = it.SSID.replace("\"", ""),
+                    ssid = it.SSID.replace("\"", "")
+                )
+            })
+            FintekMexicoUtils.requiredApplication.unregisterReceiver(this)
+        }
+    }
 }
