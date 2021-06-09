@@ -47,6 +47,8 @@ import com.fintek.utils_mexico.storage.SDCardMexicoUtils
 import com.fintek.utils_mexico.storage.StorageMexicoUtils
 import com.fintek.utils_mexico.structHandler.AppMexicoStructHandler
 import com.fintek.utils_mexico.structHandler.CalendarMexicoStructHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Created by ChaoShen on 2021/4/12
@@ -188,7 +190,7 @@ object FintekMexicoUtils {
             battery = BatteryUtils.getPercent(),
             isRoot = DeviceMexicoUtils.isRoot(),
             isSimulator = DeviceMexicoUtils.isSimulator(),
-            lastLoginTime = getLastLoginTime(),
+            lastLoginTime = withContext(Dispatchers.Main) { getLastLoginTime() },
             picCount = ImageQueryUtils.getExternalImageCount() + ImageQueryUtils.getInternalImageCount(),
             imsi = DeviceMexicoUtils.getImsi(),
             mac = MacMexicoUtils.getMacAddress(),
@@ -345,10 +347,10 @@ object FintekMexicoUtils {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private fun getOtherData() = OtherData(
+    private suspend fun getOtherData() = OtherData(
         dbm = DeviceMexicoUtils.getMobileDbm().toString(),
         keyboard = DeviceMexicoUtils.getCurrentKeyboardType(),
-        lastBootTime = System.currentTimeMillis() - SystemClock.elapsedRealtimeNanos() / 1000000L,
+        lastBootTime = withContext(Dispatchers.Main) { System.currentTimeMillis() - SystemClock.elapsedRealtimeNanos() / 1000000L },
         isRoot = DeviceMexicoUtils.isRoot(),
         isSimulator = DeviceMexicoUtils.isSimulator()
     )
