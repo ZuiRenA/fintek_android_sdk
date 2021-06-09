@@ -34,7 +34,7 @@ object NetworkMexicoUtils {
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
-    fun isWifiEnable(): Int = if (NetworkUtils.isWifiEnable()) 1 else 0
+    fun isWifiEnable(): Int = if (NetworkUtils.isWifiConnected()) 1 else 0
 
     @JvmStatic
     fun isWifiProxy(): String = if (catchOrBoolean { NetworkUtils.isWifiProxy() }) "1" else "0"
