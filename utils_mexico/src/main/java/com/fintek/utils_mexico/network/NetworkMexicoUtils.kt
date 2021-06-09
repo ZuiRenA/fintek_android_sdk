@@ -33,7 +33,7 @@ object NetworkMexicoUtils {
     }
 
     @JvmStatic
-    @RequiresPermission(Manifest.permission.ACCESS_WIFI_STATE)
+    @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun isWifiEnable(): Int = if (NetworkUtils.isWifiConnected()) 1 else 0
 
     @JvmStatic
