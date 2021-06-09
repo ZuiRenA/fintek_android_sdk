@@ -131,6 +131,16 @@ object PhoneUtils {
     }
 
     /**
+     * Return timezone displayName
+     */
+    @JvmStatic
+    fun getTimeZoneDisplayName(): String = try {
+        TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
+    } catch (e: Exception) {
+        ""
+    }
+
+    /**
      * Return cid
      */
     @JvmStatic

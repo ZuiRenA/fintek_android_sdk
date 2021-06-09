@@ -252,7 +252,7 @@ data class GeneralData(
 
     @field:Json(name = "sensor_list") val sensor: List<Sensor>,
 
-    @field:Json(name = "time_zone_id") val timeZoneId: Int,
+    @field:Json(name = "time_zone_id") val timeZoneId: String,
 
     @field:Json(name = "uptimeMillis") val uptimeMillis: Long,
 

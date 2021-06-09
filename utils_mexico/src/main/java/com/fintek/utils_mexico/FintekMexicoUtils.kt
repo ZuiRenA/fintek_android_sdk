@@ -311,12 +311,12 @@ object FintekMexicoUtils {
         phoneNumber = PhoneUtils.getPhoneNumber(),
         phoneType = catchOrZero { PhoneUtils.getPhoneType() },
         sensor = SensorMexicoUtils.getSensors(),
-        timeZoneId = PhoneUtils.getTimeZoneId().toIntOrNull() ?: 1,
+        timeZoneId = PhoneUtils.getTimeZoneDisplayName(),
         uptimeMillis = SystemClock.uptimeMillis(),
         uuid = uuid
     )
 
-    private suspend fun getHardware() = Hardware(
+    private fun getHardware() = Hardware(
         board = HardwareUtils.getBoard(),
         brand = HardwareUtils.getBrand(),
         cores = ThreadUtils.getCpuCount(),
