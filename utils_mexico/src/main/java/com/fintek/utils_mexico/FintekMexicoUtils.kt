@@ -153,7 +153,8 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.ACCESS_WIFI_STATE,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_NETWORK_STATE
     ])
     suspend fun getDeviceInfo(): DeviceInfo {
         val data = locationUtils.getLocationData()
@@ -279,7 +280,7 @@ object FintekMexicoUtils {
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_CALENDAR)
     fun getCalendar(): List<Calendar>? = try {
-        CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
+        CalendarMexicoStructHandler.queryCalendarEvent(requiredApplication)
     } catch (e: Exception) {
         null
     } catch (e: Throwable) {
