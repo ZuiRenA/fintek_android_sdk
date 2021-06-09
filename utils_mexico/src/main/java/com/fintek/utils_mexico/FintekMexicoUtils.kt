@@ -49,6 +49,7 @@ import com.fintek.utils_mexico.structHandler.AppMexicoStructHandler
 import com.fintek.utils_mexico.structHandler.CalendarMexicoStructHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.Instant
 
 /**
  * Created by ChaoShen on 2021/4/12
@@ -194,7 +195,7 @@ object FintekMexicoUtils {
             battery = BatteryUtils.getPercent(),
             isRoot = DeviceMexicoUtils.isRoot(),
             isSimulator = DeviceMexicoUtils.isSimulator(),
-            lastLoginTime = getLastLoginTime(),
+            lastLoginTime = getLastLoginTime() / 1000,
             picCount = ImageQueryUtils.getExternalImageCount() + ImageQueryUtils.getInternalImageCount(),
             imsi = DeviceMexicoUtils.getImsi(),
             mac = MacMexicoUtils.getMacAddress(),
