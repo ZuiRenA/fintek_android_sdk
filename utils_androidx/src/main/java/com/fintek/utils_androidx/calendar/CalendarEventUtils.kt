@@ -1,6 +1,7 @@
 package com.fintek.utils_androidx.calendar
 
 import android.database.Cursor
+import android.net.Uri
 import android.provider.CalendarContract
 import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
@@ -23,7 +24,7 @@ object CalendarEventUtils {
         val contentResolver = FintekUtils.requiredContext.contentResolver
         var cursor: Cursor? = null
         try {
-            cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI,
+            cursor = contentResolver.query(Uri.parse("content://com.android.calendar/events"),
                 null,
                 null,
                 null,
