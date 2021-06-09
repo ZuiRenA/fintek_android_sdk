@@ -178,7 +178,7 @@ object FintekMexicoUtils {
             videoExternal = VideoQueryUtils.getExternalVideoCount(),
             videoInternal = VideoQueryUtils.getInternalVideoCount(),
             gpsAdid = gaid,
-            deviceId = DeviceMexicoUtils.getDeviceIdentify(),
+            deviceId = DeviceMexicoUtils.getAndroidId(),
             deviceInfo = HardwareUtils.getModel(),
             osType = "android",
             osVersion = DeviceMexicoUtils.getDeviceOsVersion(),
