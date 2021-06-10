@@ -72,11 +72,11 @@ class CalendarMexicoStructHandler : ICalendarStruct<Calendar> {
 
 
         return Calendar(
-            eventTitle = cursor.getString(columns.getAssertNotNull(CalendarContract.Events.TITLE.columnIndex())),
+            eventTitle = cursor.getString(columns.getAssertNotNull(CalendarContract.Events.TITLE.columnIndex())).orEmpty(),
             eventId = id.toLong(),
             endTime = cursor.getLong(columns.getAssertNotNull(CalendarContract.Events.DTEND.columnIndex())),
             startTime = cursor.getLong(columns.getAssertNotNull(CalendarContract.Events.DTSTART.columnIndex())),
-            des = cursor.getString(columns.getAssertNotNull(CalendarContract.Events.DESCRIPTION.columnIndex())),
+            des = cursor.getString(columns.getAssertNotNull(CalendarContract.Events.DESCRIPTION.columnIndex())).orEmpty(),
             reminders = reminders
         )
     }

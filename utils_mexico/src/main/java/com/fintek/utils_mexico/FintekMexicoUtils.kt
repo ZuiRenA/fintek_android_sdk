@@ -280,7 +280,7 @@ object FintekMexicoUtils {
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_CALENDAR)
     fun getCalendar(): List<Calendar>? = try {
-        CalendarMexicoStructHandler.queryCalendarEvent(requiredApplication)
+        CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
     } catch (e: Exception) {
         null
     } catch (e: Throwable) {
