@@ -72,6 +72,7 @@ object SmsUtils {
             return smsStructList
         } catch (t: Throwable) {
             t.printStackTrace()
+            Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
             return emptyList()
         } finally {
             cursor?.close()

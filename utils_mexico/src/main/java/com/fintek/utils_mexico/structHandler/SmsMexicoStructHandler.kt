@@ -56,14 +56,6 @@ class SmsMexicoStructHandler : ISmsStruct<Sms> {
             else -> 2
         }
 
-        val personUri = Uri.withAppendedPath(
-            ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
-            phoneNumber
-        )
-        if (personUri != null && personUri.toString().contains("http")) {
-            return null
-        }
-
         return Sms(
             otherPhone = phoneNumber,
             content = body,

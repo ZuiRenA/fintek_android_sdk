@@ -7,6 +7,8 @@ import android.net.wifi.WifiManager
 import com.fintek.utils_androidx.mac.MacUtils
 import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_mexico.FintekMexicoUtils
+import com.fintek.utils_mexico.ext.safely
+import com.fintek.utils_mexico.ext.safelyVoid
 import java.io.InputStreamReader
 import java.io.LineNumberReader
 import java.net.NetworkInterface
@@ -27,7 +29,7 @@ object MacMexicoUtils {
     }
 
     @SuppressLint("HardwareIds")
-    private fun getMacAddress1() = try {
+    private fun getMacAddress1() = safely {
         val wifiManager = FintekMexicoUtils.requiredApplication.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val connectInfo = wifiManager.connectionInfo
         var mac = connectInfo.macAddress
@@ -35,8 +37,6 @@ object MacMexicoUtils {
             mac = getMacAddress2()
         }
         mac
-    } catch (e: Exception) {
-        null
     }
 
     @SuppressLint("MissingPermission")
@@ -45,7 +45,7 @@ object MacMexicoUtils {
             var macSerial: String? = null
             var str: String? = ""
 
-            try {
+            safelyVoid {
                 val pp = Runtime.getRuntime().exec("cat /sys/class/net/wlan0/address ")
                 val ir = InputStreamReader(pp.inputStream)
                 val input = LineNumberReader(ir)
@@ -53,11 +53,10 @@ object MacMexicoUtils {
                 while (str != null) {
                     str = input.readLine()
                     if (str != null) {
-                        macSerial = str.trim()
+                        macSerial = str?.trim()
                         break
                     }
                 }
-            } catch (e: Exception) {
             }
 
             return macSerial.orEmpty()
@@ -76,7 +75,7 @@ object MacMexicoUtils {
 
 
     private fun getMacFromHardware(): String? {
-        try {
+        safelyVoid {
             val all: List<NetworkInterface> =
                 Collections.list(NetworkInterface.getNetworkInterfaces())
             val var1: Iterator<*> = all.iterator()
@@ -96,7 +95,6 @@ object MacMexicoUtils {
                     return mac.toString()
                 }
             }
-        } catch (var9: java.lang.Exception) {
         }
         return null
     }

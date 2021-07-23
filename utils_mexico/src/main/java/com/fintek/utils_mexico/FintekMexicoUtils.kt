@@ -258,12 +258,8 @@ object FintekMexicoUtils {
     }
 
     @JvmStatic
-    fun getApps(): List<App>? = try {
+    fun getApps(): List<App>? = safely {
         PackageUtils.getAllPackage(AppMexicoStructHandler())
-    } catch (e: Exception) {
-        null
-    } catch (e: Throwable) {
-        null
     }
 
     @JvmStatic

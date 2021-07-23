@@ -5,11 +5,8 @@ fun catchOrZero(
     block: () -> Int
 ): Int = try {
     block()
-} catch (e: Exception) {
-    e.printStackTrace()
-    defaultValue
 } catch (t: Throwable) {
-    t.printStackTrace()
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
     defaultValue
 }
 
@@ -18,11 +15,8 @@ fun catchOrZeroDouble(
     block: () -> Double
 ): Double = try {
     block()
-} catch (e: Exception) {
-    e.printStackTrace()
-    defaultValue
 } catch (t: Throwable) {
-    t.printStackTrace()
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
     defaultValue
 }
 
@@ -31,11 +25,8 @@ fun catchOrEmpty(
     block: () -> String,
 ): String = try {
     block()
-} catch (e: Exception) {
-    e.printStackTrace()
-    defaultValue
-} catch (e: Throwable) {
-    e.printStackTrace()
+} catch (t: Throwable) {
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
     defaultValue
 }
 
@@ -44,11 +35,8 @@ fun catchOrBoolean(
     block: () -> Boolean
 ): Boolean = try {
     block()
-} catch (e: Exception) {
-    e.printStackTrace()
-    defaultValue
 } catch (t: Throwable) {
-    t.printStackTrace()
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
     defaultValue
 }
 
@@ -57,20 +45,27 @@ fun catchOrLong(
     block: () -> Long
 ): Long = try {
     block()
-} catch (e: Exception) {
-    e.printStackTrace()
-    defaultValue
 } catch (t: Throwable) {
-    t.printStackTrace()
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
     defaultValue
 }
 
-inline fun safely(block: () -> Unit) {
-    try {
-        block()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    } catch (t: Throwable) {
-        t.printStackTrace()
-    }
+inline fun <T> safely(block: () -> T): T? = try {
+    block()
+} catch (t: Throwable) {
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    null
+}
+
+inline fun <T> safely(defaultValue: T, block: () -> T): T = try {
+    block()
+} catch (t: Throwable) {
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    defaultValue
+}
+
+inline fun safelyVoid(block: () -> Unit) = try {
+    block()
+} catch (t: Throwable) {
+    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
 }

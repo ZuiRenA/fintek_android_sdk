@@ -1,6 +1,7 @@
 package com.fintek.utils_mexico.device
 
 import com.fintek.utils_androidx.device.SensorUtils
+import com.fintek.utils_mexico.ext.safely
 import com.fintek.utils_mexico.model.Sensor
 
 /**
@@ -9,7 +10,7 @@ import com.fintek.utils_mexico.model.Sensor
 object SensorMexicoUtils {
 
     @JvmStatic
-    fun getSensors(): List<Sensor> = try {
+    fun getSensors(): List<Sensor>? = safely {
         val sensor = SensorUtils.getSensors()
         sensor.map { Sensor(
             maxRange = it.maximumRange.toString(),
@@ -21,9 +22,5 @@ object SensorMexicoUtils {
             vendor = it.vendor.orEmpty(),
             version = it.version.toString()
         ) }
-    } catch (e: Exception) {
-        emptyList()
-    } catch (t: Throwable) {
-        emptyList()
     }
 }

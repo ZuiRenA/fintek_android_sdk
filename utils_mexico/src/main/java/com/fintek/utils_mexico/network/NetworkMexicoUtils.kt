@@ -58,7 +58,7 @@ object NetworkMexicoUtils {
 
     @SuppressLint("HardwareIds")
     @JvmStatic
-    fun getCurrentWifi(): Wifi = try {
+    fun getCurrentWifi(): Wifi = safely(Wifi("", "", "", "")) {
         val connectInfo = wifiManager.connectionInfo
         Wifi(
             bssid = connectInfo.bssid,
@@ -66,8 +66,6 @@ object NetworkMexicoUtils {
             name = connectInfo.ssid.replace("\"", ""),
             ssid = connectInfo.ssid.replace("\"", "")
         )
-    } catch (e: Exception) {
-        Wifi("", "", "", "")
     }
 
     @JvmStatic

@@ -25,8 +25,6 @@ class ImageMexicoStructHandler(
 
         struct.apply {
             name = if (filePath == null) "" else File(filePath).name.orEmpty()
-//            height = attributes.get(ExifInterface.TAG_IMAGE_WIDTH.paramIndex()).orEmpty()
-//            width = attributes.get(ExifInterface.TAG_IMAGE_LENGTH.paramIndex()).orEmpty()
             val latitudeRef = attributes.get(ExifInterface.TAG_GPS_LATITUDE_REF.paramIndex())
             val latitudeInternal = attributes.get(ExifInterface.TAG_GPS_LATITUDE.paramIndex())
             latitude = if (latitudeRef == "N") convertToDegree(latitudeInternal) else 0 - convertToDegree(latitudeInternal)

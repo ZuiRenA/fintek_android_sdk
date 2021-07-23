@@ -18,7 +18,7 @@
     <queries android:name="android.permission.QUERY_ALL_PACKAGES"/>
     
     <application
-        android:name="com.fintek.util.MyApplication"
+        android:name="com.fintek.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -26,10 +26,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Utils"
         tools:overrideLibrary="com.stu.lon">
-        <activity android:name="com.fintek.util.MainJavaActivity">
+        <activity android:name="com.fintek.MainJavaActivity">
 
         </activity>
-        <activity android:name="com.fintek.util.MainActivity">
+        <activity android:name="com.fintek.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

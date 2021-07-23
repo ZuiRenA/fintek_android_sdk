@@ -3,6 +3,7 @@ package com.fintek.utils_mexico.location
 import android.location.Geocoder
 import android.location.Location
 import com.fintek.utils_mexico.FintekMexicoUtils
+import com.fintek.utils_mexico.ext.safelyVoid
 import java.util.*
 
 /**
@@ -15,12 +16,10 @@ object LocationMexicoUtils {
         if (latitude == null || longitude == null) return null
 
         val geocoder = Geocoder(FintekMexicoUtils.requiredApplication)
-        try {
+        safelyVoid {
             val result = geocoder.getFromLocation(latitude, longitude, 1)
 
             return result[0].getAddressLine(0)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
 
         return null
@@ -31,12 +30,10 @@ object LocationMexicoUtils {
         if (latitude == null || longitude == null) return null
 
         val geocoder = Geocoder(FintekMexicoUtils.requiredApplication)
-        try {
+        safelyVoid {
             val result = geocoder.getFromLocation(latitude, longitude, 1)
 
             return result[0].toString()
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
 
         return null

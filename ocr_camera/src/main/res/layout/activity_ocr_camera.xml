@@ -35,7 +35,8 @@
                 android:id="@+id/ll_camera_crop_container"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <!--相机裁剪区域顶部-->
                 <View
@@ -54,10 +55,10 @@
 
                 <!--手动裁剪区域-->
                 <com.fintek.ocr_camera.cropper.CropImageView
-                    android:visibility="gone"
                     android:id="@+id/crop_image_view"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:visibility="visible" />
 
                 <!--相机裁剪区域底部-->
                 <TextView
