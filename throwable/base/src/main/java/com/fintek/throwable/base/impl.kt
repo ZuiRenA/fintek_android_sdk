@@ -14,6 +14,12 @@ fun interface DispatchedComponentHandler : ComponentHandler {
     }
 }
 
-fun interface BaseBindComponentHandler {
+interface BaseBindComponentHandler {
     fun bindComponent()
+
+    fun setDefaultExceptionHandler(handler: DefaultExceptionHandler)
+}
+
+fun interface DefaultExceptionHandler {
+    fun exceptionHandler(thread: Thread?, throwable: Throwable?): Boolean
 }

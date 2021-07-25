@@ -6,9 +6,19 @@ package com.fintek.throwable.base
 typealias GLOBAL_COMPONENT = BaseThreadUncaughtExceptionComponent
 
 object BaseThreadUncaughtExceptionComponent : ComponentHandler {
-    private val defaultHandler: Thread.UncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+    internal var defaultExceptionHandler: DefaultExceptionHandler? = null
 
     override fun uncaughtException(thread: Thread?, throwable: Throwable?) {
-        println("thread: ${thread?.name}, throwable: ${throwable?.localizedMessage}")
+        if (defaultExceptionHandler == null) {
+            BaseGlobalComponentBinder.jvmDefaultExceptionHandler.uncaughtException(thread, throwable)
+        }
+
+        val isHandled = defaultExceptionHandler?.exceptionHandler(thread, throwable) ?: return
+        if (isHandled) {
+            return
+        }
+
+        BaseGlobalComponentBinder.jvmDefaultExceptionHandler.uncaughtException(thread, throwable)
     }
 }
