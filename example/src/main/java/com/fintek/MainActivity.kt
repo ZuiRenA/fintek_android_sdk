@@ -11,7 +11,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.fintek.coroutine.catchLaunch
+import com.fintek.throwable.coroutine.catchLaunch
 import com.fintek.util_example.R
 import com.fintek.utils_mexico.FintekMexicoUtils
 import kotlinx.coroutines.CoroutineScope

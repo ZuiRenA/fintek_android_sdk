@@ -1,7 +1,6 @@
-package com.fintek.rxjava;
+package com.fintek.throwable.rxjava;
 
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 
 /**

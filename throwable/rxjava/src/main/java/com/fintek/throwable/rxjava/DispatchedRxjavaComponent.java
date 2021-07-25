@@ -1,4 +1,4 @@
-package com.fintek.rxjava;
+package com.fintek.throwable.rxjava;
 
 import org.jetbrains.annotations.Nullable;
 

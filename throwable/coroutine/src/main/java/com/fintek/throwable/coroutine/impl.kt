@@ -1,4 +1,4 @@
-package com.fintek.coroutine
+package com.fintek.throwable.coroutine
 
 import com.fintek.throwable.base.DispatchedComponentHandler
 import com.fintek.throwable.base.GLOBAL_COMPONENT

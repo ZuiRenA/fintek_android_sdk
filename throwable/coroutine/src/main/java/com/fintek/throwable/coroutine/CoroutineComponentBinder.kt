@@ -1,4 +1,4 @@
-package com.fintek.coroutine
+package com.fintek.throwable.coroutine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart

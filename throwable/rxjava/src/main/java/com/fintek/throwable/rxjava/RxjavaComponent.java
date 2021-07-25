@@ -1,4 +1,4 @@
-package com.fintek.rxjava;
+package com.fintek.throwable.rxjava;
 
 import com.fintek.throwable.base.BaseThreadUncaughtExceptionComponent;
 import com.fintek.throwable.base.DispatchedComponentHandler;

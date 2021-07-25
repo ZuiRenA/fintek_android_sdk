@@ -1,4 +1,4 @@
-package com.fintek.coroutine
+package com.fintek.throwable.coroutine
 
 import org.junit.Test
 
