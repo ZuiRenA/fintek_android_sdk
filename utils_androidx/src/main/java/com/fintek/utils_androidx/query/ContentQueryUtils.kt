@@ -19,7 +19,7 @@ object ContentQueryUtils {
         } else {
             contentResolver.query(uri, queryString, null, null, null) ?: return 0
         }
-        if (cursor.moveToFirst()) {
+        if (!cursor.moveToFirst()) {
             cursor.moveToFirst()
         }
         var count = 0

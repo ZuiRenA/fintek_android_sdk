@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Process
 import android.text.TextUtils
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -28,20 +30,17 @@ object ProcessUtils {
         return name
     }
 
-    private val currentProcessNameByFile: String get() = try {
+    private val currentProcessNameByFile: String get() = catchOrEmpty {
         val file = File("/proc/" + Process.myPid() + "/" + "cmdline")
         val mBufferedReader = BufferedReader(FileReader(file))
         val processName = mBufferedReader.readLine().trim { it <= ' ' }
         mBufferedReader.close()
         processName
-    } catch (e: Exception) {
-        e.printStackTrace()
-        ""
     }
 
     private fun getCurrentProcessNameByAms(): String? {
-        try {
-            val am = FintekUtils.requiredContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        safelyVoid {
+            val am = FintekUtils.requiredContext.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
                 ?: return ""
             val info = am.runningAppProcesses
             if (info == null || info.size == 0) return ""
@@ -53,15 +52,13 @@ object ProcessUtils {
                     }
                 }
             }
-        } catch (e: java.lang.Exception) {
-            return ""
         }
         return ""
     }
 
     private fun getCurrentProcessNameByReflect(): String? {
         var processName = ""
-        try {
+        safelyVoid {
             val app: Context = FintekUtils.requiredContext
             val loadedApkField = app.javaClass.getField("mLoadedApk")
             loadedApkField.isAccessible = true
@@ -71,8 +68,6 @@ object ProcessUtils {
             val activityThread = activityThreadField[loadedApk]
             val getProcessName = activityThread.javaClass.getDeclaredMethod("getProcessName")
             processName = getProcessName.invoke(activityThread) as String
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
         }
         return processName
     }

@@ -18,6 +18,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.model.LocationData
+import com.fintek.utils_androidx.throwable.safelyVoid
 
 
 class LocationUtils : LocationListener, LifecycleObserver {
@@ -194,10 +195,8 @@ class LocationUtils : LocationListener, LifecycleObserver {
                 locationData?.locationType = LocationData.NATIVE_NULL
             }
 
-            try {
+            safelyVoid {
                 locationManager?.requestLocationUpdates(providerType,  100L, 0f, this)
-            } catch (e: Exception) {
-                // ignore this
             }
         }
     }

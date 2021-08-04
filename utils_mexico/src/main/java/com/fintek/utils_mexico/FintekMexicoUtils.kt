@@ -11,30 +11,29 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.content.edit
 import com.fintek.utils_androidx.FintekUtils
-import com.fintek.utils_androidx.packageInfo.PackageUtils
 import com.fintek.utils_androidx.app.AppUtils
 import com.fintek.utils_androidx.battery.BatteryUtils
 import com.fintek.utils_androidx.calendar.CalendarEventUtils
-import com.fintek.utils_androidx.calendar.CalendarUtils
 import com.fintek.utils_androidx.contact.ContactUtils
 import com.fintek.utils_androidx.device.DeviceUtils
 import com.fintek.utils_androidx.hardware.HardwareUtils
 import com.fintek.utils_androidx.language.LanguageUtils
 import com.fintek.utils_androidx.location.LocationUtils
 import com.fintek.utils_androidx.network.NetworkUtils
+import com.fintek.utils_androidx.packageInfo.PackageUtils
 import com.fintek.utils_androidx.phone.PhoneUtils
 import com.fintek.utils_androidx.sms.SmsUtils
 import com.fintek.utils_androidx.storage.RuntimeMemoryUtils
 import com.fintek.utils_androidx.storage.StorageUtils
 import com.fintek.utils_androidx.thread.ThreadUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.catchOrLong
+import com.fintek.utils_androidx.throwable.catchOrZero
+import com.fintek.utils_androidx.throwable.safely
 import com.fintek.utils_mexico.battery.BatteryMexicoUtils
 import com.fintek.utils_mexico.date.DateMexicoUtils
 import com.fintek.utils_mexico.device.DeviceMexicoUtils
 import com.fintek.utils_mexico.device.SensorMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrEmpty
-import com.fintek.utils_mexico.ext.catchOrLong
-import com.fintek.utils_mexico.ext.catchOrZero
-import com.fintek.utils_mexico.ext.safely
 import com.fintek.utils_mexico.hardware.HardwareMexicoUtils
 import com.fintek.utils_mexico.language.LanguageMexicoUtils
 import com.fintek.utils_mexico.location.LocationMexicoUtils
@@ -42,14 +41,13 @@ import com.fintek.utils_mexico.mac.MacMexicoUtils
 import com.fintek.utils_mexico.model.*
 import com.fintek.utils_mexico.network.NetworkMexicoUtils
 import com.fintek.utils_mexico.query.*
-import com.fintek.utils_mexico.structHandler.SmsMexicoStructHandler
 import com.fintek.utils_mexico.storage.SDCardMexicoUtils
 import com.fintek.utils_mexico.storage.StorageMexicoUtils
 import com.fintek.utils_mexico.structHandler.AppMexicoStructHandler
 import com.fintek.utils_mexico.structHandler.CalendarMexicoStructHandler
+import com.fintek.utils_mexico.structHandler.SmsMexicoStructHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.Instant
 
 /**
  * Created by ChaoShen on 2021/4/12
@@ -85,6 +83,11 @@ object FintekMexicoUtils {
                 }
             }
         })
+    }
+
+    @JvmStatic
+    fun isDebugEnable(isDebugEnable: Boolean) = apply {
+        FintekUtils.isDebugEnable = isDebugEnable
     }
 
     @JvmStatic
@@ -212,49 +215,44 @@ object FintekMexicoUtils {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresPermission(Manifest.permission.READ_CONTACTS)
-    fun getContacts(): List<Contact>? {
-        return try {
-            val contacts = ContactUtils.getContacts()
-            val transformList = mutableListOf<Contact>()
-            contacts.asSequence().forEach {
-                when(it.phone?.size) {
-                    0 -> transformList.add(
+    fun getContacts(): List<Contact>? = safely {
+        val contacts = ContactUtils.getContacts() ?: return@safely null
+
+        val transformList = mutableListOf<Contact>()
+        contacts.asSequence().forEach {
+            when(it.phone?.size) {
+                0 -> transformList.add(
+                    Contact(
+                        name = it.name.orEmpty(),
+                        phoneNumber = "",
+                        updateTime = it.upTime?.toLong() ?: 0L,
+                        lastTimeContacted = it.lastTimeContacted.toLong(),
+                        timesContacted = it.timesContacted
+                    )
+                )
+                1 -> transformList.add(
+                    Contact(
+                        name = it.name.orEmpty(),
+                        phoneNumber = it.phone?.get(0).orEmpty(),
+                        updateTime = it.upTime?.toLong() ?: 0L,
+                        lastTimeContacted = it.lastTimeContacted.toLong(),
+                        timesContacted = it.timesContacted
+                    )
+                )
+                else -> transformList.addAll(
+                    it.phone?.map { internalPhone ->
                         Contact(
                             name = it.name.orEmpty(),
-                            phoneNumber = "",
+                            phoneNumber = internalPhone,
                             updateTime = it.upTime?.toLong() ?: 0L,
                             lastTimeContacted = it.lastTimeContacted.toLong(),
                             timesContacted = it.timesContacted
                         )
-                    )
-                    1 -> transformList.add(
-                        Contact(
-                            name = it.name.orEmpty(),
-                            phoneNumber = it.phone?.get(0).orEmpty(),
-                            updateTime = it.upTime?.toLong() ?: 0L,
-                            lastTimeContacted = it.lastTimeContacted.toLong(),
-                            timesContacted = it.timesContacted
-                        )
-                    )
-                    else -> transformList.addAll(
-                        it.phone?.map { internalPhone ->
-                            Contact(
-                                name = it.name.orEmpty(),
-                                phoneNumber = internalPhone,
-                                updateTime = it.upTime?.toLong() ?: 0L,
-                                lastTimeContacted = it.lastTimeContacted.toLong(),
-                                timesContacted = it.timesContacted
-                            )
-                        } ?: emptyList()
-                    )
-                }
+                    } ?: emptyList()
+                )
             }
-            transformList
-        } catch (e: Exception) {
-            null
-        } catch (e: Throwable) {
-            null
         }
+        transformList
     }
 
     @JvmStatic
@@ -265,22 +263,8 @@ object FintekMexicoUtils {
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS])
-    fun getSms(): List<Sms>? = try {
+    fun getSms(): List<Sms>? = safely {
         SmsUtils.getAllSms(projection = SmsMexicoStructHandler())
-    } catch (e: Exception) {
-        null
-    } catch (e: Throwable) {
-        null
-    }
-
-    @JvmStatic
-    @RequiresPermission(Manifest.permission.READ_CALENDAR)
-    fun getCalendar(): List<Calendar>? = try {
-        CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
-    } catch (e: Exception) {
-        null
-    } catch (e: Throwable) {
-        null
     }
 
     private fun getBatteryStatus() = BatteryStatus(
@@ -291,6 +275,12 @@ object FintekMexicoUtils {
         isCharging = BatteryMexicoUtils.isCharging(),
         isUsbCharge = BatteryMexicoUtils.isUsbCharging()
     )
+
+    @JvmStatic
+    @RequiresPermission(Manifest.permission.READ_CALENDAR)
+    fun getCalendar(): List<Calendar>? = safely {
+        CalendarEventUtils.getCalendar(CalendarMexicoStructHandler())
+    }
 
     @SuppressLint("MissingPermission", "NewApi")
     private fun getGeneralData() = GeneralData(

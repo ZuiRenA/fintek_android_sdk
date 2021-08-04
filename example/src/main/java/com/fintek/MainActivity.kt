@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.fintek.throwable.coroutine.catchLaunch
 import com.fintek.util_example.R
 import com.fintek.utils_mexico.FintekMexicoUtils
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.button).setOnClickListener {
-            FintekMexicoUtils.getSms()
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), 1000)
         }
 
         catchLaunch {
@@ -67,6 +68,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             return
         }
 
+        catchLaunch {
+            FintekMexicoUtils.registerLocationListener()
+            val test = FintekMexicoUtils.getExtension()
+            FintekMexicoUtils.unregisterLocationListener()
+            print(test)
+        }
     }
-
 }

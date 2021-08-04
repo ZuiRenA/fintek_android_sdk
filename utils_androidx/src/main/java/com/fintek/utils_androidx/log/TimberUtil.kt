@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.collection.SimpleArrayMap
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.model.TagHead
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
@@ -264,10 +266,8 @@ object TimberUtil {
             } else if (className.startsWith("interface ")) {
                 className = className.substring(10)
             }
-            try {
+            safelyVoid {
                 return Class.forName(className)
-            } catch (e: ClassNotFoundException) {
-                e.printStackTrace()
             }
         }
         return objClass
@@ -432,16 +432,13 @@ object TimberUtil {
     private fun createOrExistsFile(filePath: String, date: String): Boolean {
         val file = File(filePath)
         if (file.exists()) return file.isFile
-        return if (!UtilsBridge.createOrExistsDir(file.parentFile)) false else try {
+        return if (!UtilsBridge.createOrExistsDir(file.parentFile)) false else catchOrBoolean {
             deleteDueLogs(filePath, date)
             val isCreate = file.createNewFile()
             if (isCreate) {
                 printDeviceInfo(filePath, date)
             }
             isCreate
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
         }
     }
 
@@ -456,7 +453,7 @@ object TimberUtil {
         }
         if (files == null || files.isEmpty()) return
         val sdf = SimpleDateFormat("yyyy_MM_dd", Locale.getDefault())
-        try {
+        safelyVoid {
             val dueMillis: Long = checkNotNull(sdf.parse(date)?.time) - CONFIG.getSaveDays() * 86400000L
             for (aFile in files) {
                 val name = aFile.name
@@ -470,8 +467,6 @@ object TimberUtil {
                     }
                 }
             }
-        } catch (e: ParseException) {
-            e.printStackTrace()
         }
     }
 

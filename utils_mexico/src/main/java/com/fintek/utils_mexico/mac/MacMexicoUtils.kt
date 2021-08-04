@@ -6,9 +6,9 @@ import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import com.fintek.utils_androidx.mac.MacUtils
 import com.fintek.utils_androidx.network.NetworkUtils
+import com.fintek.utils_androidx.throwable.safely
+import com.fintek.utils_androidx.throwable.safelyVoid
 import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.safely
-import com.fintek.utils_mexico.ext.safelyVoid
 import java.io.InputStreamReader
 import java.io.LineNumberReader
 import java.net.NetworkInterface

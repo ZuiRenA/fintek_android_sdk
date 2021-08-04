@@ -12,6 +12,8 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.safely
 import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
@@ -67,11 +69,7 @@ object DeviceUtils {
     @JvmStatic // No support for device / profile owner or carrier privileges (b/72967236).
     @Deprecated("Use getImei which returns IMEI for GSM or getMeid which returns MEID for CDMA.")
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getDeviceId(): String? = try {
-        telephonyManager?.deviceId
-    } catch (e: Exception) {
-        null
-    }
+    fun getDeviceId(): String? = safely { telephonyManager?.deviceId }
 
     /**
      * This API requires one of the following:
@@ -98,11 +96,7 @@ object DeviceUtils {
     @SuppressLint("NewApi")
     @JvmStatic // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getImei(): String? = try {
-        telephonyManager?.imei
-    } catch (e: Exception) {
-        null
-    }
+    fun getImei(): String? = safely { telephonyManager?.imei }
 
 
     /**
@@ -125,12 +119,8 @@ object DeviceUtils {
         )
 
         val id = if (Build.SERIAL != Build.UNKNOWN) androidId + Build.SERIAL else androidId
-        val serial: String? = try {
-            // api >= 9 reflect to get serial
-            Build::class.java.getField("SERIAL").get(null)?.toString()
-        } catch (e: Exception) {
-            // must init serial, use itself
-            "serial"
+        val serial: String = catchOrEmpty("serial") {
+            Build::class.java.getField("SERIAL").get(null)?.toString() ?: "serial"
         }
 
         return UUID(szDevIdShort.hashCode().toLong(), serial.hashCode().toLong()).toString() + id
@@ -148,16 +138,8 @@ object DeviceUtils {
     fun getGaid(consumer: FintekUtils.Consumer<String>) {
         UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             override fun doInBackground(): String {
-                return try {
+                return catchOrEmpty {
                     AdvertisingIdClient.getAdvertisingIdInfo(FintekUtils.requiredContext).id
-                } catch (e: GooglePlayServicesNotAvailableException) {
-                    ""
-                } catch (e: GooglePlayServicesRepairableException) {
-                    ""
-                } catch (e: IOException) {
-                    ""
-                } catch (e: IllegalStateException) {
-                    ""
                 }
             }
         })
@@ -218,11 +200,7 @@ object DeviceUtils {
      */
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getImsi(): String? = try {
-        telephonyManager?.subscriberId
-    } catch (e: Exception) {
-        null
-    }
+    fun getImsi(): String? = safely { telephonyManager?.subscriberId }
 
     /**
      * Return whether to root

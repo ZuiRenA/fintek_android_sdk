@@ -11,6 +11,7 @@ import androidx.annotation.RequiresPermission
 import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.model.ImageInfo
+import com.fintek.utils_androidx.throwable.safely
 import java.io.File
 import java.io.IOException
 
@@ -62,11 +63,8 @@ object ImageUtils {
     @Nullable
     @Throws(IOException::class)
     @JvmStatic
-    fun String.getExifInterface(): ExifInterface? = try {
+    fun String.getExifInterface(): ExifInterface? = safely {
         ExifInterface(this)
-    } catch (e: Exception) {
-        // use try catch to ignore error log in console
-        null
     }
 
 

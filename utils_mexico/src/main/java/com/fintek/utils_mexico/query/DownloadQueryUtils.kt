@@ -1,10 +1,7 @@
 package com.fintek.utils_mexico.query
 
-import android.app.DownloadManager
-import android.content.Context
 import android.os.Environment
-import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrZero
+import com.fintek.utils_androidx.throwable.catchOrZero
 import java.io.File
 
 /**

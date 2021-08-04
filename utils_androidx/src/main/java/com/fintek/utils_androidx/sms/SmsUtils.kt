@@ -11,6 +11,7 @@ import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.common.QueryOrder
 import com.fintek.utils_androidx.common.SmsQueryOrder
 import com.fintek.utils_androidx.model.Sms
+import com.fintek.utils_androidx.throwable.safely
 
 object SmsUtils {
     /**
@@ -33,7 +34,7 @@ object SmsUtils {
     @RequiresPermission(anyOf = [Manifest.permission.READ_SMS, Manifest.permission.READ_CONTACTS])
     fun getAllSms(
         sortOrder: QueryOrder = SmsQueryOrder.DateDESC,
-    ): List<Sms> = getAllSms(sortOrder, DEFAULT)
+    ): List<Sms> = getAllSms(sortOrder, DEFAULT) ?: emptyList()
 
     /**
      * get all sms info
@@ -49,14 +50,13 @@ object SmsUtils {
     fun <T> getAllSms(
         sortOrder: QueryOrder = SmsQueryOrder.DateDESC,
         projection: ISmsStruct<T>,
-    ): List<T> {
-        var cursor: Cursor? = null
-        try {
-            val smsStructList = mutableListOf<T>()
+    ): List<T>? {
+        return safely {
             val contentResolver = FintekUtils.requiredContext.contentResolver
             val uri = Uri.parse(SMS_URI)
-            cursor = contentResolver.query(uri, projection.projection(),
-                null, null, sortOrder.toSortOrder) ?: return emptyList()
+            val cursor: Cursor = contentResolver.query(uri, projection.projection(),
+                null, null, sortOrder.toSortOrder) ?: return null
+            val smsStructList = mutableListOf<T>()
 
             while (cursor.moveToNext()) {
                 val sparseArrayCompat = SparseArrayCompat<Int>()
@@ -69,13 +69,8 @@ object SmsUtils {
                     smsStructList.add(t)
                 }
             }
-            return smsStructList
-        } catch (t: Throwable) {
-            t.printStackTrace()
-            Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
-            return emptyList()
-        } finally {
-            cursor?.close()
+            cursor.close()
+            smsStructList
         }
     }
 }

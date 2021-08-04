@@ -10,6 +10,9 @@ import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.catchOrLong
+import com.fintek.utils_androidx.throwable.safely
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
@@ -23,17 +26,13 @@ object StorageUtils {
     private const val DISTINGUISH = "-"
 
     @JvmStatic
-    fun getMainStoragePath(): String = try {
+    fun getMainStoragePath(): String = catchOrEmpty {
         Environment.getDataDirectory().path
-    } catch (e: Exception) {
-        ""
     }
 
     @JvmStatic
-    fun getExternalStoragePath(): String = try {
+    fun getExternalStoragePath(): String = catchOrEmpty {
         Environment.getExternalStorageDirectory().path
-    } catch (e: Exception) {
-        ""
     }
 
 
@@ -77,63 +76,51 @@ object StorageUtils {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private fun getStorageInfoRepaired(): Pair<Long, Long> {
-        try {
-            val storageTotalSize: String
-            val storageAvailableSize: String
-            val storageStr = queryWithStorageManagerRepaired()
-            if (storageStr.contains("-")) {
-                val split = storageStr.split("-").toTypedArray()
-                val storageTotalSizeStr = split[0]
-                val storageAvailableSizeStr = split[1]
-                storageTotalSize = storageTotalSizeStr
-                storageAvailableSize = storageAvailableSizeStr
-            } else {
-                storageTotalSize = getExternalTotalSpace().toString()
-                storageAvailableSize = getExternalAvailableSpace().toString()
-            }
-            return storageTotalSize.toLong() to storageAvailableSize.toLong()
-        } catch (e: Exception) {
-            return 0L to 0L
+    private fun getStorageInfoRepaired(): Pair<Long, Long> = safely(0L to 0L) {
+        val storageTotalSize: String
+        val storageAvailableSize: String
+        val storageStr = queryWithStorageManagerRepaired()
+        if (storageStr.contains("-")) {
+            val split = storageStr.split("-").toTypedArray()
+            val storageTotalSizeStr = split[0]
+            val storageAvailableSizeStr = split[1]
+            storageTotalSize = storageTotalSizeStr
+            storageAvailableSize = storageAvailableSizeStr
+        } else {
+            storageTotalSize = getExternalTotalSpace().toString()
+            storageAvailableSize = getExternalAvailableSpace().toString()
         }
+        storageTotalSize.toLong() to storageAvailableSize.toLong()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private fun getStorageInfoBug(): Pair<Long, Long> {
-        try {
-            val storageTotalSize: String
-            val storageAvailableSize: String
-            val storageStr = queryWithStorageManagerBug()
-            if (storageStr.contains("-")) {
-                val split = storageStr.split("-").toTypedArray()
-                val storageTotalSizeStr = split[0]
-                val storageAvailableSizeStr = split[1]
-                storageTotalSize = storageTotalSizeStr
-                storageAvailableSize = storageAvailableSizeStr
-            } else {
-                storageTotalSize = getExternalTotalSpace().toString()
-                storageAvailableSize = getExternalAvailableSpace().toString()
-            }
-            return storageTotalSize.toLong() to storageAvailableSize.toLong()
-        } catch (e: Exception) {
-            return 0L to 0L
+    private fun getStorageInfoBug(): Pair<Long, Long> = safely(0L to 0L) {
+        val storageTotalSize: String
+        val storageAvailableSize: String
+        val storageStr = queryWithStorageManagerBug()
+        if (storageStr.contains("-")) {
+            val split = storageStr.split("-").toTypedArray()
+            val storageTotalSizeStr = split[0]
+            val storageAvailableSizeStr = split[1]
+            storageTotalSize = storageTotalSizeStr
+            storageAvailableSize = storageAvailableSizeStr
+        } else {
+            storageTotalSize = getExternalTotalSpace().toString()
+            storageAvailableSize = getExternalAvailableSpace().toString()
         }
+        storageTotalSize.toLong() to storageAvailableSize.toLong()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private fun getExternalTotalSpace(): Long = try {
+    private fun getExternalTotalSpace(): Long = catchOrLong {
         val stat = StatFs(getExternalStoragePath())
         stat.blockCountLong * stat.blockSizeLong
-    } catch (e: Exception) {
-        0L
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private fun getExternalAvailableSpace(): Long = try {
+    private fun getExternalAvailableSpace(): Long = catchOrLong {
         val stat = StatFs(getExternalStoragePath())
         stat.availableBlocksLong * stat.blockSizeLong
-    } catch (e: Exception) {
-        0L
     }
 
     @SuppressLint("DiscouragedPrivateApi", "UsableSpace")
@@ -141,7 +128,7 @@ object StorageUtils {
         val storageManager =
             FintekUtils.requiredContext.getSystemService(Context.STORAGE_SERVICE) as StorageManager
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            try {
+            return catchOrEmpty {
                 val getVolumeList = StorageManager::class.java.getDeclaredMethod("getVolumeList")
                 val volumeList = getVolumeList.invoke(storageManager) as? Array<StorageVolume>
                 var totalSize: Long = 0
@@ -157,20 +144,11 @@ object StorageUtils {
                         availableSize += file.usableSpace
                     }
                 }
-                return totalSize.toString() + DISTINGUISH + availableSize
-            } catch (e: NoSuchMethodException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return ""
+                totalSize.toString() + DISTINGUISH + availableSize
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
+            return catchOrEmpty(queryWithStatFs()) {
                 val getVolumes =
                     StorageManager::class.java.getDeclaredMethod("getVolumes") //6.0
                 val getVolumeInfo =
@@ -225,12 +203,7 @@ object StorageUtils {
                     } else if (type == 2) { //TYPE_EMULATED
                     }
                 }
-                return total.toString() + DISTINGUISH + (total - used)
-            } catch (e: SecurityException) {
-                e.printStackTrace()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return queryWithStatFs()
+                total.toString() + DISTINGUISH + (total - used)
             }
         }
         return ""
@@ -241,7 +214,7 @@ object StorageUtils {
         val storageManager =
             FintekUtils.requiredContext.getSystemService(Context.STORAGE_SERVICE) as StorageManager
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            try {
+            return catchOrEmpty {
                 val getVolumeList = StorageManager::class.java.getDeclaredMethod("getVolumeList")
                 val volumeList = getVolumeList.invoke(storageManager) as? Array<StorageVolume>
                 var totalSize: Long = 0
@@ -257,20 +230,11 @@ object StorageUtils {
                         availableSize += file.usableSpace
                     }
                 }
-                return totalSize.toString() + DISTINGUISH + availableSize
-            } catch (e: NoSuchMethodException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return ""
+                totalSize.toString() + DISTINGUISH + availableSize
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
+            return catchOrEmpty(queryWithStatFs()) {
                 val getVolumes =
                     StorageManager::class.java.getDeclaredMethod("getVolumes") //6.0
                 val getVolumeInfo =
@@ -325,12 +289,7 @@ object StorageUtils {
                     } else if (type == 2) { //TYPE_EMULATED
                     }
                 }
-                return total.toString() + DISTINGUISH + (total - used)
-            } catch (e: SecurityException) {
-                e.printStackTrace()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return queryWithStatFs()
+                total.toString() + DISTINGUISH + (total - used)
             }
         }
         return ""
@@ -338,7 +297,7 @@ object StorageUtils {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getTotalSizeRepaired(context: Context, fsUuid: String?): Long {
-        return try {
+        return catchOrLong(-1) {
             val id: UUID = if (fsUuid == null) {
                 StorageManager.UUID_DEFAULT
             } else {
@@ -348,18 +307,6 @@ object StorageUtils {
                 StorageStatsManager::class.java
             )
             stats.getTotalBytes(id)
-        } catch (e: NoSuchFieldError) {
-            e.printStackTrace()
-            -1
-        } catch (e: NoClassDefFoundError) {
-            e.printStackTrace()
-            -1
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
-            -1
-        } catch (e: IOException) {
-            e.printStackTrace()
-            -1
         }
     }
 

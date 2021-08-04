@@ -1,6 +1,7 @@
 package com.fintek.utils_androidx.language
 
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
 import java.util.*
 
 /**
@@ -20,43 +21,37 @@ object LanguageUtils {
      * Return locale iso3language
      */
     @JvmStatic
-    fun getIso3Language(): String = try {
-        var language = ""
+    fun getIso3Language(): String = catchOrEmpty {
+        var language: String
 
-        getCurrentLocale()?.let {
+        getCurrentLocale().let {
             language = it.isO3Language
         }
 
         language
-    } catch (e: Exception) {
-        ""
     }
 
     /**
      * Return locale iso3country
      */
     @JvmStatic
-    fun getIso3Country(): String = try {
-        var country = ""
-        getCurrentLocale()?.let {
+    fun getIso3Country(): String = catchOrEmpty {
+        var country: String
+        getCurrentLocale().let {
             country = it.isO3Country
         }
         country
-    } catch (e: Exception) {
-        ""
     }
 
     /**
      * Return locale display language
      */
     @JvmStatic
-    fun getDisplayLanguage(): String = try {
-        var displayLanguage = ""
-        getCurrentLocale()?.let {
+    fun getDisplayLanguage(): String = catchOrEmpty {
+        var displayLanguage: String
+        getCurrentLocale().let {
             displayLanguage = it.displayLanguage
         }
         displayLanguage
-    } catch (e: Exception) {
-        ""
     }
 }

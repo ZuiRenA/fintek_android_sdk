@@ -5,10 +5,10 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.battery.BatteryUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.catchOrZero
+import com.fintek.utils_androidx.throwable.catchOrZeroDouble
 import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrEmpty
-import com.fintek.utils_mexico.ext.catchOrZero
-import com.fintek.utils_mexico.ext.catchOrZeroDouble
 
 /**
  * Created by ChaoShen on 2021/4/15

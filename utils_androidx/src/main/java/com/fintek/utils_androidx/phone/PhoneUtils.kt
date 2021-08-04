@@ -8,6 +8,8 @@ import android.telephony.TelephonyManager
 import android.telephony.gsm.GsmCellLocation
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.catchOrEmpty
 import java.util.*
 
 /**
@@ -44,10 +46,8 @@ object PhoneUtils {
             Manifest.permission.READ_PHONE_NUMBERS
         ]
     )
-    fun getPhoneNumber(): String = try {
+    fun getPhoneNumber(): String = catchOrEmpty {
         if (isHasSimCard()) telephonyManager?.line1Number ?: "" else ""
-    } catch (e: Exception) {
-        ""
     }
 
     /**
@@ -58,10 +58,8 @@ object PhoneUtils {
     @JvmStatic
     @SuppressLint("HardwareIds", "MissingPermission")
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getImsi(): String = try {
+    fun getImsi(): String = catchOrEmpty {
         telephonyManager?.subscriberId ?: ""
-    } catch (e: Exception) {
-        ""
     }
 
     /**
@@ -72,7 +70,7 @@ object PhoneUtils {
     @JvmStatic
     @SuppressLint("HardwareIds", "MissingPermission")
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getMCC(): String = try {
+    fun getMCC(): String = catchOrEmpty {
         var mcc = ""
 
         if (isHasSimCard()) {
@@ -83,8 +81,6 @@ object PhoneUtils {
         }
 
         mcc
-    } catch (e: Exception) {
-        ""
     }
 
     /**
@@ -95,7 +91,7 @@ object PhoneUtils {
     @JvmStatic
     @SuppressLint("HardwareIds", "MissingPermission")
     @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun getMNC(): String = try {
+    fun getMNC(): String = catchOrEmpty {
         var mnc = ""
 
         if (isHasSimCard()) {
@@ -106,38 +102,29 @@ object PhoneUtils {
         }
 
         mnc
-    } catch (e: Exception) {
-        ""
     }
 
     /**
      * Return is has sim card
      */
     @JvmStatic
-    fun isHasSimCard(): Boolean = try {
+    fun isHasSimCard(): Boolean = catchOrBoolean {
         !telephonyManager?.simOperator.isNullOrEmpty()
-    } catch (e: Exception) {
-        false
     }
-
     /**
      * Return timezone id
      */
     @JvmStatic
-    fun getTimeZoneId(): String = try {
+    fun getTimeZoneId(): String = catchOrEmpty {
         TimeZone.getDefault().id
-    } catch (e: Exception) {
-        ""
     }
 
     /**
      * Return timezone displayName
      */
     @JvmStatic
-    fun getTimeZoneDisplayName(): String = try {
+    fun getTimeZoneDisplayName(): String = catchOrEmpty {
         TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-    } catch (e: Exception) {
-        ""
     }
 
     /**
@@ -145,14 +132,12 @@ object PhoneUtils {
      */
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    fun getCID(): String = try {
+    fun getCID(): String = catchOrEmpty {
         val location = telephonyManager?.cellLocation as? GsmCellLocation
         var cid = ""
         location?.let {
             cid = location.cid.toString()
         }
         cid
-    } catch (e: Exception) {
-        ""
     }
 }

@@ -19,6 +19,10 @@ import androidx.annotation.WorkerThread
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
 import com.fintek.utils_androidx.thread.Task
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.safely
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.io.*
 import java.net.*
 import java.util.*
@@ -68,12 +72,9 @@ object NetworkUtils {
     @JvmStatic
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun getUserAgent(): String {
-        val userAgent =
-            try {
-                WebSettings.getDefaultUserAgent(FintekUtils.requiredContext)
-            } catch (e: Exception) {
-                System.getProperty("http.agent")
-            }
+        val userAgent: String? = safely(System.getProperty("http.agent")) {
+            WebSettings.getDefaultUserAgent(FintekUtils.requiredContext)
+        }
         val sb = StringBuffer()
         if (!userAgent.isNullOrEmpty()) {
             var i = 0
@@ -181,7 +182,7 @@ object NetworkUtils {
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun isMobileDataEnable(): Boolean {
-        try {
+        safely {
             val tm = FintekUtils.requiredContext.getSystemService(Context.TELEPHONY_SERVICE)
                     as? TelephonyManager ?: return false
 
@@ -191,8 +192,6 @@ object NetworkUtils {
 
             val getMobileDataEnableMethod = tm.javaClass.getDeclaredMethod("getDataEnabled")
             return getMobileDataEnableMethod.invoke(tm) as Boolean
-        } catch (e: Exception) {
-            UtilsBridge.e("NetworkUtils.isMobileDataEnable", e)
         }
 
         return false
@@ -409,7 +408,7 @@ object NetworkUtils {
     @JvmStatic
     @RequiresPermission(Manifest.permission.INTERNET)
     fun getIPAddress(useIPv4: Boolean): String {
-        try {
+        safely {
             val nis = NetworkInterface.getNetworkInterfaces()
             val adds = LinkedList<InetAddress>()
 
@@ -442,8 +441,6 @@ object NetworkUtils {
                     }
                 }
             }
-        } catch (e: SocketException) {
-            e.printStackTrace()
         }
 
         return ""
@@ -456,7 +453,7 @@ object NetworkUtils {
      */
     @JvmStatic
     fun getBroadcastIPAddress(): String {
-        try {
+        safely {
             val nis = NetworkInterface.getNetworkInterfaces()
             while (nis.hasMoreElements()) {
                 val ni = nis.nextElement()
@@ -470,8 +467,6 @@ object NetworkUtils {
                     if (broadcast != null) return broadcast.hostAddress
                 }
             }
-        } catch (e: SocketException) {
-            e.printStackTrace()
         }
 
         return ""
@@ -504,12 +499,9 @@ object NetworkUtils {
      */
     @JvmStatic
     @RequiresPermission(Manifest.permission.INTERNET)
-    fun getDomainAddress(domain: String): String = try {
+    fun getDomainAddress(domain: String): String = catchOrEmpty {
         val ia = InetAddress.getByName(domain)
         ia.hostAddress
-    } catch (e: UnknownHostException) {
-        e.printStackTrace()
-        ""
     }
 
     /**
@@ -587,12 +579,9 @@ object NetworkUtils {
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_FINE_LOCATION])
     fun getConfiguredBSSID(): List<String> {
         val wm = wifiManager ?: return emptyList()
-        return try {
+        return safely {
             wm.configuredNetworks.mapNotNull { it.BSSID }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+        } ?: emptyList()
     }
 
     /**
@@ -636,7 +625,7 @@ object NetworkUtils {
     fun getConfiguredSSID(): List<String> {
         val wm = wifiManager ?: return emptyList()
 
-        return try {
+        return safely {
             wm.configuredNetworks.map {
                 if (it.SSID.length > 2 && it.SSID[0] == '"' && it.SSID[it.SSID.lastIndex] == '"') {
                     it.SSID.substring(1, it.SSID.lastIndex)
@@ -644,10 +633,7 @@ object NetworkUtils {
                     it.SSID
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+        } ?: emptyList()
     }
 
     /**
@@ -683,17 +669,13 @@ object NetworkUtils {
     fun getConfiguredMacByWifi(): List<String> {
         val wm = wifiManager ?: return emptyList()
         val configuredNetworks = wm.configuredNetworks
-        return try {
+        return safely {
             configuredNetworks.map {
                 val method = it.javaClass.getDeclaredMethod("getRandomizedMacAddress")
                 val macAddress: Any? = method.invoke(null)
                 macAddress.toString()
             }
-        } catch (e: Exception) {
-            emptyList()
-        } catch (t: Throwable) {
-            emptyList()
-        }
+        } ?: emptyList()
     }
 
 
@@ -724,10 +706,8 @@ object NetworkUtils {
         UtilsBridge.executeByCached(object : FintekUtils.Task<String>(consumer) {
             @RequiresPermission(anyOf = [Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE])
             override fun doInBackground(): String {
-                val publicIp = try {
+                val publicIp = catchOrEmpty {
                     getPublicIp().orEmpty()
-                } catch (e: Exception) {
-                    ""
                 }
                 val wifiIp = getIpAddressByWifi()
                 val gprsIp = getGPRSIp()
@@ -761,7 +741,7 @@ object NetworkUtils {
      */
     private fun getDnsFromCommand(): Array<String?>? {
         val dnsServers: LinkedList<String> = LinkedList()
-        try {
+        safelyVoid {
             val process = Runtime.getRuntime().exec("getprop")
             val inputStream: InputStream = process.inputStream
             val lnr = LineNumberReader(InputStreamReader(inputStream))
@@ -784,8 +764,6 @@ object NetworkUtils {
                     dnsServers.add(value)
                 }
             }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
         }
         return if (dnsServers.isEmpty()) arrayOfNulls(0) else dnsServers.toArray(
             arrayOfNulls<String>(
@@ -841,7 +819,7 @@ object NetworkUtils {
      * Return Intranet ip
      */
     private fun getGPRSIp(): String {
-        try {
+        safelyVoid {
             val en = NetworkInterface.getNetworkInterfaces()
             while (en.hasMoreElements()) {
                 val networkInterface = en.nextElement()
@@ -854,8 +832,6 @@ object NetworkUtils {
                     }
                 }
             }
-        } catch (e: SocketException) {
-            e.printStackTrace()
         }
         return ""
     }
@@ -873,7 +849,7 @@ object NetworkUtils {
     }
 
     @JvmStatic
-    fun isEnableVpn(): Boolean = try {
+    fun isEnableVpn(): Boolean = catchOrBoolean {
         val all = Collections.list(NetworkInterface.getNetworkInterfaces())
         var isEnableVpn = false
         all.forEach {
@@ -882,9 +858,5 @@ object NetworkUtils {
             }
         }
         isEnableVpn
-    } catch (e: Exception) {
-        false
-    } catch (e: Throwable) {
-        false
     }
 }

@@ -1,6 +1,7 @@
 package com.fintek.utils_androidx.mac
 
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.net.NetworkInterface
 import kotlin.experimental.and
 
@@ -54,7 +55,7 @@ object MacUtils {
     }
 
     private fun getMacByteArray(): ByteArray? {
-        try {
+        safelyVoid {
             val enumeration = NetworkInterface.getNetworkInterfaces() ?: return null
             while (enumeration.hasMoreElements()) {
                 val netInterface = enumeration.nextElement()
@@ -62,8 +63,6 @@ object MacUtils {
                     return netInterface.hardwareAddress
                 }
             }
-        } catch (e: Exception) {
-            UtilsBridge.e(e.message, e)
         }
         return null
     }

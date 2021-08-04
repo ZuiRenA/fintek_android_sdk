@@ -1,5 +1,6 @@
 package com.fintek.utils_androidx.file
 
+import com.fintek.utils_androidx.throwable.catchOrBoolean
 import java.io.File
 import java.io.IOException
 
@@ -41,11 +42,8 @@ object FileUtils {
     fun createOrExistsFile(file: File?): Boolean {
         if (file == null) return false
         if (file.exists()) return file.isFile
-        return if (!createOrExistsDir(file.parentFile)) false else try {
+        return if (!createOrExistsDir(file.parentFile)) false else catchOrBoolean {
             file.createNewFile()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
         }
     }
 }

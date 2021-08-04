@@ -8,6 +8,7 @@ import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.common.CallQueryOrder
 import com.fintek.utils_androidx.common.QueryOrder
+import com.fintek.utils_androidx.throwable.safely
 
 /**
  * Created by ChaoShen on 2020/11/16
@@ -43,19 +44,17 @@ object CallUtils {
     fun <T> getCalls(
         sortOrder: QueryOrder = CallQueryOrder.DateDESC,
         callStructHandler: ICallStruct<T>
-    ): List<T> {
-        if (callStructHandler.queryColumns().isEmpty()) return emptyList()
-
-        val contentResolver = FintekUtils.requiredContext.contentResolver
-        var cursor: Cursor? = null
-        try {
-            cursor = contentResolver.query(
+    ): List<T>? {
+        if (callStructHandler.queryColumns().isEmpty()) return null
+        return safely {
+            val contentResolver = FintekUtils.requiredContext.contentResolver
+            val cursor: Cursor = contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 null,
                 null,
                 null,
                 sortOrder.toSortOrder
-            ) ?: return emptyList()
+            ) ?: return null
 
             val callStructList = mutableListOf<T>()
 
@@ -70,12 +69,8 @@ object CallUtils {
                 }
             }
 
-            return callStructList
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            return emptyList()
-        } finally {
-            cursor?.close()
+            cursor.close()
+            callStructList
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.io.File
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
@@ -218,10 +219,8 @@ private fun <T> IFormatter<T>.getTypeClassFromParadigm(): Class<T>? {
     } else if (className.startsWith("interface ")) {
         className = className.substring(10)
     }
-    try {
+    safelyVoid {
         return Class.forName(className) as Class<T>
-    } catch (e: ClassNotFoundException) {
-        e.printStackTrace()
     }
     return null
 }

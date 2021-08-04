@@ -5,6 +5,8 @@ import android.net.Uri
 import android.provider.CalendarContract
 import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.safely
+import com.fintek.utils_androidx.throwable.safelyVoid
 
 /**
  * Created by ChaoShen on 2021/4/16
@@ -18,17 +20,15 @@ object CalendarEventUtils {
     @JvmStatic
     fun <T> getCalendar(
         calendarStructHandler: ICalendarStruct<T>
-    ): List<T> {
-        if (calendarStructHandler.queryColumns().isEmpty()) return emptyList()
-
-        val contentResolver = FintekUtils.requiredContext.contentResolver
-        var cursor: Cursor? = null
-        try {
-            cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI,
+    ): List<T>? {
+        if (calendarStructHandler.queryColumns().isEmpty()) return null
+        return safely {
+            val contentResolver = FintekUtils.requiredContext.contentResolver
+            val cursor: Cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI,
                 null,
                 null,
                 null,
-                null) ?: return emptyList()
+                null) ?: return null
 
             val calendarStructList = mutableListOf<T>()
             while (cursor.moveToNext()) {
@@ -41,13 +41,8 @@ object CalendarEventUtils {
                     calendarStructList.add(struct)
                 }
             }
-            return calendarStructList
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            cursor?.close()
+            cursor.close()
+            calendarStructList
         }
-
-        return emptyList()
     }
 }

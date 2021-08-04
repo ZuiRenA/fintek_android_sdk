@@ -6,9 +6,9 @@ import android.os.StatFs
 import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.storage.SDCardUtils
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.catchOrEmpty
 import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrBoolean
-import com.fintek.utils_mexico.ext.catchOrEmpty
 
 /**
  * Created by ChaoShen on 2021/4/16

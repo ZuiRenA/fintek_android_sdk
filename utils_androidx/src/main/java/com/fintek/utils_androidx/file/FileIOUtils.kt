@@ -2,6 +2,7 @@ package com.fintek.utils_androidx.file
 
 import android.util.Log
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.catchOrBoolean
 import java.io.*
 import java.nio.charset.Charset
 
@@ -50,20 +51,13 @@ object FileIOUtils {
             Log.e("FileIOUtils", "create file <$file> failed.")
             return false
         }
-        var bw: BufferedWriter? = null
-        return try {
-            bw = BufferedWriter(OutputStreamWriter(FileOutputStream(file, append), charset))
+
+        return catchOrBoolean {
+            val bw: BufferedWriter =
+                BufferedWriter(OutputStreamWriter(FileOutputStream(file, append), charset))
             bw.write(content)
+            bw.close()
             true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        } finally {
-            try {
-                bw?.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
         }
     }
 }

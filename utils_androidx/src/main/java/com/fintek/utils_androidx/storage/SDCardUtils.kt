@@ -10,6 +10,7 @@ import android.text.format.Formatter
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.safelyVoid
 import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.util.ArrayList
@@ -131,7 +132,7 @@ object SDCardUtils {
                 ?: return paths
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val storageVolumes = sm.storageVolumes
-            try {
+            safelyVoid {
                 val getPathMethod =
                     StorageVolume::class.java.getMethod("getPath")
                 for (storageVolume in storageVolumes) {
@@ -141,16 +142,10 @@ object SDCardUtils {
                         getPathMethod.invoke(storageVolume) as String //路径
                     paths.add(SDCardInfo(path, state, isRemovable))
                 }
-            } catch (e: NoSuchMethodException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
             }
             paths
         } else {
-            try {
+            safelyVoid {
                 val storageVolumeClazz =
                     Class.forName("android.os.storage.StorageVolume")
                 val getPathMethod =
@@ -176,14 +171,6 @@ object SDCardUtils {
                         getVolumeStateMethod.invoke(sm, path) as String
                     paths.add(SDCardInfo(path, state, isRemovable))
                 }
-            } catch (e: ClassNotFoundException) {
-                e.printStackTrace()
-            } catch (e: InvocationTargetException) {
-                e.printStackTrace()
-            } catch (e: NoSuchMethodException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
             }
             paths
         }

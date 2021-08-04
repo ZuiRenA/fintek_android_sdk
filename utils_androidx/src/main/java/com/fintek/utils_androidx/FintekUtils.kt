@@ -21,6 +21,8 @@ object FintekUtils {
     /* Whether to enable debug log */
     var isDebugEnable = true
 
+    var isThrowable = false
+
     /**
      * Utils used context
      * @see init

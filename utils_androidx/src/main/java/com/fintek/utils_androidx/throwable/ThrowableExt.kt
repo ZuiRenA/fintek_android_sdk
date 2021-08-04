@@ -1,4 +1,6 @@
-package com.fintek.utils_mexico.ext
+package com.fintek.utils_androidx.throwable
+
+import com.fintek.utils_androidx.FintekUtils
 
 fun catchOrZero(
     defaultValue: Int = 0,
@@ -6,7 +8,7 @@ fun catchOrZero(
 ): Int = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
@@ -16,7 +18,7 @@ fun catchOrZeroDouble(
 ): Double = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
@@ -26,7 +28,7 @@ fun catchOrEmpty(
 ): String = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
@@ -36,7 +38,7 @@ fun catchOrBoolean(
 ): Boolean = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
@@ -46,26 +48,35 @@ fun catchOrLong(
 ): Long = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
 inline fun <T> safely(block: () -> T): T? = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     null
 }
 
 inline fun <T> safely(defaultValue: T, block: () -> T): T = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
     defaultValue
 }
 
 inline fun safelyVoid(block: () -> Unit) = try {
     block()
 } catch (t: Throwable) {
-    Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), t)
+    throwableWithDefault(t)
+}
+
+fun throwableWithDefault(t: Throwable) {
+    if (FintekUtils.isThrowable) {
+        Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(
+            Thread.currentThread(),
+            FintekSDKException(t)
+        )
+    }
 }

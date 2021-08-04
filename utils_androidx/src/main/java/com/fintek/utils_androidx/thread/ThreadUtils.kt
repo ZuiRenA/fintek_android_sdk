@@ -5,6 +5,8 @@ import android.os.Looper
 import androidx.annotation.CallSuper
 import androidx.annotation.IntRange
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.FintekSDKException
+import com.fintek.utils_androidx.throwable.throwableWithDefault
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -724,6 +726,7 @@ abstract class SimpleTask<T> : Task<T>() {
 
     override fun onFail(t: Throwable) {
         UtilsBridge.e("ThreadUtils", "onFail: $t")
+        throwableWithDefault(t)
     }
 }
 

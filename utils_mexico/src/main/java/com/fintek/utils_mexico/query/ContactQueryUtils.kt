@@ -1,11 +1,8 @@
 package com.fintek.utils_mexico.query
 
 import android.provider.ContactsContract
-import com.fintek.utils_androidx.log.TimberUtil
-import com.fintek.utils_androidx.query.ContentQueryUtils
+import com.fintek.utils_androidx.throwable.catchOrZero
 import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrZero
-
 /**
  * Created by ChaoShen on 2021/4/16
  */

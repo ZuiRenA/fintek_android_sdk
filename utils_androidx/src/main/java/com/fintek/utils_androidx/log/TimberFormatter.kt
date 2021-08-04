@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import com.fintek.utils_androidx.UtilsBridge
+import com.fintek.utils_androidx.throwable.safelyVoid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -158,7 +159,7 @@ object TimberFormatter {
     }
 
     private fun formatJson(json: String): String {
-        try {
+        safelyVoid {
             json.forEach {
                 when {
                     it == '{' -> return JSONObject(json).toString(2)
@@ -166,8 +167,6 @@ object TimberFormatter {
                     !Character.isWhitespace(it) -> return json
                 }
             }
-        } catch (e: JSONException) {
-            e.printStackTrace()
         }
 
         return json
@@ -175,7 +174,7 @@ object TimberFormatter {
 
     private fun formatXml(xml: String): String {
         var xmlShadow = xml
-        try {
+        safelyVoid {
             val xmlInput: Source = StreamSource(StringReader(xmlShadow))
             val xmlOutput = StreamResult(StringWriter())
             val transformer = TransformerFactory.newInstance().newTransformer()
@@ -184,8 +183,6 @@ object TimberFormatter {
             transformer.transform(xmlInput, xmlOutput)
             xmlShadow = xmlOutput.writer.toString()
                 .replaceFirst(">".toRegex(), ">$LINE_SEP")
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
         return xmlShadow
     }

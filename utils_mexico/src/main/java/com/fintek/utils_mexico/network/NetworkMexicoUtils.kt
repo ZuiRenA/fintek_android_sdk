@@ -7,18 +7,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiManager
-import android.text.TextUtils
 import androidx.annotation.RequiresPermission
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.network.NetworkUtils
 import com.fintek.utils_androidx.network.NetworkUtils.NetworkType.*
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.safely
 import com.fintek.utils_mexico.FintekMexicoUtils
-import com.fintek.utils_mexico.ext.catchOrBoolean
-import com.fintek.utils_mexico.ext.catchOrEmpty
-import com.fintek.utils_mexico.ext.safely
-import com.fintek.utils_mexico.mac.MacMexicoUtils
 import com.fintek.utils_mexico.model.Wifi
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -46,11 +43,11 @@ object NetworkMexicoUtils {
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
     fun getNetworkType(): String = catchOrEmpty { when(NetworkUtils.getNetworkType()) {
         NETWORK_ETHERNET -> "ethernet"
-        NETWORK_WIFI -> "wifi"
-        NETWORK_5G -> "5g"
-        NETWORK_4G -> "4g"
-        NETWORK_3G -> "3g"
-        NETWORK_2G -> "2g"
+        NETWORK_WIFI -> "WIFI"
+        NETWORK_5G -> "5G"
+        NETWORK_4G -> "4G"
+        NETWORK_3G -> "3G"
+        NETWORK_2G -> "2G"
         NETWORK_UNKNOWN -> "unknown"
         NETWORK_NO -> ""
     } }

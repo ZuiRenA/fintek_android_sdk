@@ -1,7 +1,7 @@
 package com.fintek.utils_mexico.device
 
 import com.fintek.utils_androidx.device.SensorUtils
-import com.fintek.utils_mexico.ext.safely
+import com.fintek.utils_androidx.throwable.safely
 import com.fintek.utils_mexico.model.Sensor
 
 /**

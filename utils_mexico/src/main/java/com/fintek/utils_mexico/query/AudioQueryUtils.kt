@@ -1,10 +1,8 @@
 package com.fintek.utils_mexico.query
 
-import android.os.Build
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
 import com.fintek.utils_androidx.query.ContentQueryUtils
-import com.fintek.utils_mexico.ext.catchOrZero
+import com.fintek.utils_androidx.throwable.catchOrZero
 
 /**
  * Created by ChaoShen on 2021/4/15

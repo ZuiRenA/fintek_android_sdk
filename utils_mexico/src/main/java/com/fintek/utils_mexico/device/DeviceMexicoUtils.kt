@@ -2,14 +2,13 @@ package com.fintek.utils_mexico.device
 
 import android.Manifest
 import android.os.Build
+import android.os.Build.VERSION_CODES.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import androidx.annotation.StringRes
 import com.fintek.utils_androidx.device.DeviceUtils
-import com.fintek.utils_mexico.ext.catchOrBoolean
-import com.fintek.utils_mexico.ext.catchOrEmpty
-import com.fintek.utils_mexico.ext.catchOrZero
-import android.os.Build.VERSION_CODES.*
+import com.fintek.utils_androidx.throwable.catchOrBoolean
+import com.fintek.utils_androidx.throwable.catchOrEmpty
+import com.fintek.utils_androidx.throwable.catchOrZero
 
 /**
  * Created by ChaoShen on 2021/4/15

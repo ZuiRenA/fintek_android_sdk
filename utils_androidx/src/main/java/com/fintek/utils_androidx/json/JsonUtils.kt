@@ -1,6 +1,8 @@
 package com.fintek.utils_androidx.json
 
 import android.util.Log
+import com.fintek.utils_androidx.throwable.safely
+import com.fintek.utils_androidx.throwable.throwableWithDefault
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -206,31 +208,34 @@ object JsonUtils {
         defaultValue: T,
         type: Byte
     ): T {
-        return if (jsonObject == null || key == null || key.length == 0) {
-            defaultValue
-        } else try {
-            val ret: Any
-            ret = if (type == TYPE_BOOLEAN) {
-                jsonObject.getBoolean(key)
-            } else if (type == TYPE_INT) {
-                jsonObject.getInt(key)
-            } else if (type == TYPE_LONG) {
-                jsonObject.getLong(key)
-            } else if (type == TYPE_DOUBLE) {
-                jsonObject.getDouble(key)
-            } else if (type == TYPE_STRING) {
-                jsonObject.getString(key)
-            } else if (type == TYPE_JSON_OBJECT) {
-                jsonObject.getJSONObject(key)
-            } else if (type == TYPE_JSON_ARRAY) {
-                jsonObject.getJSONArray(key)
-            } else {
-                return defaultValue
+        return if (jsonObject == null || key == null || key.isEmpty()) defaultValue else safely(defaultValue) {
+            val ret: Any = when (type) {
+                TYPE_BOOLEAN -> {
+                    jsonObject.getBoolean(key)
+                }
+                TYPE_INT -> {
+                    jsonObject.getInt(key)
+                }
+                TYPE_LONG -> {
+                    jsonObject.getLong(key)
+                }
+                TYPE_DOUBLE -> {
+                    jsonObject.getDouble(key)
+                }
+                TYPE_STRING -> {
+                    jsonObject.getString(key)
+                }
+                TYPE_JSON_OBJECT -> {
+                    jsonObject.getJSONObject(key)
+                }
+                TYPE_JSON_ARRAY -> {
+                    jsonObject.getJSONArray(key)
+                }
+                else -> {
+                    return defaultValue
+                }
             }
             ret as T
-        } catch (e: JSONException) {
-            Log.e("JsonUtils", "getValueByType: ", e)
-            defaultValue
         }
     }
 
@@ -240,13 +245,8 @@ object JsonUtils {
         defaultValue: T,
         type: Byte
     ): T {
-        return if (json == null || json.length == 0 || key == null || key.length == 0) {
-            defaultValue
-        } else try {
+        return if (json == null || json.isEmpty() || key == null || key.isEmpty()) defaultValue else safely(defaultValue) {
             getValueByType(JSONObject(json), key, defaultValue, type)
-        } catch (e: JSONException) {
-            Log.e("JsonUtils", "getValueByType: ", e)
-            defaultValue
         }
     }
 
@@ -267,7 +267,7 @@ object JsonUtils {
                 i++
             }
         } catch (e: JSONException) {
-            e.printStackTrace()
+            throwableWithDefault(e)
         }
         return json
     }

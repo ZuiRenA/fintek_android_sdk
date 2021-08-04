@@ -9,6 +9,7 @@ import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
 import com.fintek.utils_androidx.FintekUtils
+import com.fintek.utils_androidx.throwable.catchOrEmpty
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -148,10 +149,8 @@ object HardwareUtils {
      */
     @JvmStatic
     @SuppressLint("MissingPermission")
-    fun getSerialNumber(): String = try {
+    fun getSerialNumber(): String = catchOrEmpty(Build.SERIAL) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Build.getSerial() else Build.SERIAL
-    } catch (e: Exception) {
-        Build.SERIAL
     }
 
     private fun getPhysicalPoint(): Point? {

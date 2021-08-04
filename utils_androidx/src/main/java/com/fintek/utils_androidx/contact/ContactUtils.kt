@@ -10,6 +10,7 @@ import androidx.collection.SparseArrayCompat
 import com.fintek.utils_androidx.FintekUtils
 import com.fintek.utils_androidx.call.CallDefaultStructHandler
 import com.fintek.utils_androidx.model.Contact
+import com.fintek.utils_androidx.throwable.safely
 
 /**
  * Created by ChaoShen on 2020/11/16
@@ -22,26 +23,24 @@ object ContactUtils {
     @RequiresPermission(Manifest.permission.READ_CONTACTS)
     fun getContacts(
         isDeduplication: Boolean = false
-    ): List<Contact> = getContacts(ContactDefaultStructHandler(isDeduplication))
+    ): List<Contact>? = getContacts(ContactDefaultStructHandler(isDeduplication))
 
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.READ_CONTACTS)
     fun <T> getContacts(
         contactStructHandler: IContactStruct<T>,
-    ): List<T> {
-        if (contactStructHandler.queryColumns().isEmpty()) return emptyList()
-
-        val contentResolver = FintekUtils.requiredContext.contentResolver
-        var cursor: Cursor? = null
-        try {
-            cursor = contentResolver.query(
+    ): List<T>? {
+        if (contactStructHandler.queryColumns().isEmpty()) return null
+        return safely {
+            val contentResolver = FintekUtils.requiredContext.contentResolver
+            val cursor: Cursor = contentResolver.query(
                 ContactsContract.Contacts.CONTENT_URI,
                 null,
                 null,
                 null,
                 null
-            ) ?: return emptyList()
+            ) ?: return null
 
             val contactStructList = mutableListOf<T>()
 
@@ -58,12 +57,8 @@ object ContactUtils {
                 }
             }
 
-            return contactStructList
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            return emptyList()
-        } finally {
-            cursor?.close()
+            cursor.close()
+            contactStructList
         }
     }
 }
