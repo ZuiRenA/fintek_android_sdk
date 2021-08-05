@@ -41,15 +41,14 @@ object NetworkMexicoUtils {
 
     @JvmStatic
     @RequiresPermission(Manifest.permission.ACCESS_NETWORK_STATE)
-    fun getNetworkType(): String = catchOrEmpty { when(NetworkUtils.getNetworkType()) {
-        NETWORK_ETHERNET -> "ethernet"
-        NETWORK_WIFI -> "WIFI"
+    fun getNetworkType(): String = catchOrEmpty("none") { when(NetworkUtils.getNetworkType()) {
+        NETWORK_WIFI -> "wifi"
         NETWORK_5G -> "5G"
         NETWORK_4G -> "4G"
         NETWORK_3G -> "3G"
         NETWORK_2G -> "2G"
-        NETWORK_UNKNOWN -> "unknown"
-        NETWORK_NO -> ""
+        NETWORK_UNKNOWN, NETWORK_NO -> "none"
+        else -> "other"
     } }
 
 
