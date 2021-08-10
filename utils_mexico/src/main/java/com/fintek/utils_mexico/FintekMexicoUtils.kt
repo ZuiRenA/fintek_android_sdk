@@ -235,7 +235,7 @@ object FintekMexicoUtils {
                         name = it.name.orEmpty(),
                         phoneNumber = it.phone?.get(0).orEmpty(),
                         updateTime = it.upTime?.toLong() ?: 0L,
-                        lastTimeContacted = it.lastTimeContacted.toLong(),
+                        lastTimeContacted = it.lastTimeContacted,
                         timesContacted = it.timesContacted
                     )
                 )
@@ -245,7 +245,7 @@ object FintekMexicoUtils {
                             name = it.name.orEmpty(),
                             phoneNumber = internalPhone,
                             updateTime = it.upTime?.toLong() ?: 0L,
-                            lastTimeContacted = it.lastTimeContacted.toLong(),
+                            lastTimeContacted = it.lastTimeContacted,
                             timesContacted = it.timesContacted
                         )
                     } ?: emptyList()

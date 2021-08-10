@@ -35,8 +35,7 @@
                 android:id="@+id/ll_camera_crop_container"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="vertical">
 
                 <!--相机裁剪区域顶部-->
                 <View

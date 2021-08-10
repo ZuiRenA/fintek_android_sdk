@@ -45,7 +45,7 @@ class ContactDefaultStructHandler(
                 .getAssertNotNull(ContactsContract.Contacts.IN_VISIBLE_GROUP.columnIndex()))
             isUserProfile = cursor.getString(column
                 .getAssertNotNull(ContactsContract.Contacts.IS_USER_PROFILE.columnIndex()))
-            lastTimeContacted = cursor.getInt(column
+            lastTimeContacted = cursor.getLong(column
                 .getAssertNotNull(ContactsContract.Contacts.LAST_TIME_CONTACTED.columnIndex()))
             sendToVoiceMail = cursor.getInt(column
                 .getAssertNotNull(ContactsContract.Contacts.SEND_TO_VOICEMAIL.columnIndex()))

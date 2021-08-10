@@ -42,7 +42,7 @@ data class Contact(
      * @see [Contacts Provider]{https://developer.android.com/guide/topics/providers/contacts-provider#ObsoleteData} page.
      */
     @Deprecated("If you publish your app to the Google Play Store, this field is obsolete, regardless of Android version.")
-    var lastTimeContacted: Int = 0,
+    var lastTimeContacted: Long = 0,
 
     /**
      * Whether the contact should always be sent to voicemail. If missing,
