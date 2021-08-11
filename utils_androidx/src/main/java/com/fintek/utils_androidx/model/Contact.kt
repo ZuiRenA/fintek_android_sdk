@@ -87,7 +87,7 @@ data class Contact(
         parcel.readInt(),
         parcel.readInt(),
         parcel.readString(),
-        parcel.readInt(),
+        parcel.readLong(),
         parcel.readInt(),
         parcel.readInt(),
         parcel.readInt(),
@@ -101,7 +101,7 @@ data class Contact(
         parcel.writeInt(hasPhoneNumber)
         parcel.writeInt(inVisibleGroup)
         parcel.writeString(isUserProfile)
-        parcel.writeInt(lastTimeContacted)
+        parcel.writeLong(lastTimeContacted)
         parcel.writeInt(sendToVoiceMail)
         parcel.writeInt(starred)
         parcel.writeInt(timesContacted)
