@@ -3,6 +3,7 @@ package com.fintek
 
 import android.app.Application
 import android.util.Log
+import com.fintek.ntl_utils.NtlUtils
 import com.fintek.throwable.rxjava.RxjavaComponentBinder
 import com.fintek.throwable.base.BaseGlobalComponentBinder
 import com.fintek.throwable.base.DefaultExceptionHandler
@@ -24,6 +25,13 @@ class MyApplication : Application(), DefaultExceptionHandler {
         BaseGlobalComponentBinder.bindComponent()
         BaseGlobalComponentBinder.setDefaultExceptionHandler(this)
         RxjavaComponentBinder.setErrorHandler()
+
+        NtlUtils.init(this)
+            .setIdentify(object : NtlUtils.AbstractIdentify<String>() {
+                override fun invoke(): String = "1006"
+            })
+            .setBaseUrl("url here")
+            .setUploadApiPath("path here")
     }
 
     override fun exceptionHandler(thread: Thread?, throwable: Throwable?): Boolean {

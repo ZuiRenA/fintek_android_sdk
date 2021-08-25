@@ -166,7 +166,6 @@ data class Sms(
     /**0-未读，1-已读*/
     @field:Json(name = "seen") val seen: Int?,
     /**短信状态：-1表示接收，0-complete，64-pending，128-failed*/
-
     @field:Json(name = "read") val read: Int?,
 
     @field:Json(name = "subject") val subject: String?,
