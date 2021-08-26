@@ -160,7 +160,9 @@ object FintekMexicoUtils {
         Manifest.permission.ACCESS_NETWORK_STATE
     ])
     suspend fun getDeviceInfo(): DeviceInfo {
+        registerLocationListener()
         val data = locationUtils.getLocationData()
+        unregisterLocationListener()
         return DeviceInfo(
             albs = "",
             audioExternal = AudioQueryUtils.getExternalAudioCount(),

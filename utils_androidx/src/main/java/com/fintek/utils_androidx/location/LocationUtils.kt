@@ -58,13 +58,14 @@ class LocationUtils : LocationListener, LifecycleObserver {
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             activity.startActivityForResult(intent, 0)
         }
+
+
+        private var locationData: LocationData? = null
     }
 
 
     private val locationManager: LocationManager?
         get() = FintekUtils.requiredContext.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-
-    private var locationData: LocationData? = null
 
     /**
      * Register listener, it will listen location data when use it.
@@ -108,7 +109,9 @@ class LocationUtils : LocationListener, LifecycleObserver {
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun registerLocationListener() {
         UtilsBridge.v("registerLocationListener")
-        locationData = LocationData()
+        if (locationData == null) {
+            locationData = LocationData()
+        }
         locationData?.locationType = LocationData.INIT
         initLocationService()
     }
@@ -129,10 +132,6 @@ class LocationUtils : LocationListener, LifecycleObserver {
         if (locationManager != null) {
             locationManager?.removeUpdates(this)
         }
-
-        if (locationData != null) {
-            locationData = null
-        }
     }
 
     /**
@@ -145,7 +144,6 @@ class LocationUtils : LocationListener, LifecycleObserver {
     fun getLocationData(): LocationData? = locationData
 
     override fun onLocationChanged(location: Location) {
-        location.accuracy
         locationData?.location = location
     }
 
